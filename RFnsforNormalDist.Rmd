@@ -1,0 +1,52 @@
+---
+title: "R Functions for Normal Distribution"
+author: "Jingyang(Judy) Zhang"
+date: "10/12/2021"
+output: html_document
+---
+
+Given Values:
+
+```{r}
+q_L <- -1.96
+q_U <- 1.96
+sd <- 1
+mean <- 0
+
+alpha <- 0.05
+
+```
+
+
+Find Probability:
+```{r}
+pnorm(q_L, mean, sd, lower.tail = TRUE, log.p = FALSE) #0.025
+
+pnorm(q_L, mean, sd, lower.tail = FALSE, log.p = FALSE) #0.975
+
+pnorm(q_U, mean, sd, lower.tail = TRUE, log.p = FALSE) #0.975
+
+pnorm(q_U, mean, sd, lower.tail = FALSE, log.p = FALSE) #0.025
+
+
+
+```
+
+
+
+Find Critical Values:
+
+```{r}
+
+qnorm(alpha/2, mean, sd, lower.tail = TRUE, log.p = FALSE) #-1.96
+
+qnorm(alpha/2, mean, sd, lower.tail = FALSE, log.p = FALSE) #1.96
+
+qnorm(1 - alpha/2, mean, sd, lower.tail = TRUE, log.p = FALSE) #1.96
+
+qnorm(1 - alpha/2, mean, sd, lower.tail = FALSE, log.p = FALSE) #-1.96
+
+
+```
+
+
