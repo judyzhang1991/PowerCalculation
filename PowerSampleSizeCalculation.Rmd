@@ -1,0 +1,172 @@
+---
+title: "Power and Sample Size Calculation"
+author: "Jingyang(Judy) Zhang"
+date: "10/6/2021"
+output: html_document
+---
+
+
+# A. Problem Setup
+
+Test whether there is a significant difference among variances of k groups. For example, if k = 2, the problem can be to test whether there is a significant difference between the variance of treatment group and the variance of control group. 
+
+
+# B. Setup
+
+$x_{ij}$:$j^{th}$ observation in $i^{th}$ group.$i\in{1,2,3,…,n_i}$ where $n_i$  is the sample size of the $i^{th}$ group.
+
+$i\in{1,2,…,k}$: number of groups.
+
+$N = \sum_{i=1}^{k}n_i$∶ total number of observations of k groups. 
+
+$σ_i^2$: population variance of the $i^{th}$ group.
+
+$s_i^2$: sample variance of the $i^{th}$ group. 
+
+$\bar{x}_{..} = \frac{\sum_{i=1}^{k}\sum{j=1}^{n_i}x_{ij}}{N}$: the overall mean of the N observations.
+
+$\bar{x}_{i.} = \frac{\sum_{j=1}^{n_i}x_{ij}}{n_i}$: the group mean of the $i^{th}$ group. 
+
+$\alpha$: significance level (also is the Type I error rate). 
+
+
+# C. F Test for Equality of Two Variances ($k=2$)
+
+1. \textbf{Assumptions:}
+
+a. Both populations are normally distributed.
+
+b. The two populations are independent of each other. 
+
+2. \textbf{Hypotheses:}
+
+$H_0: \sigma_1^2 = \sigma_2^2$
+
+$H_a: \sigma_1^2 \neq \sigma_2^2$ (Two-Tailed Test)
+
+$H_a: \sigma_1^2 > \sigma_2^2$ (Upper One-Tailed Test)
+
+$H_a: \sigma_1^2 < \sigma_2^2$ (Lower One-Tailed Test)
+
+
+3. \textbf{Test Statistic:} 
+
+$F = \frac{s_1^2}{s_2^2} = \frac{\frac{\sum_{j=1}^{n_1}(x_{1j} - x_{1.})^2}{n_1 -1}}{\frac{\sum_{j=1}^{n_2}(x_{2j} - x_{2.})^2}{n_2 -1}}$
+
+
+4. \textbf{Rejection Region:}
+
+Let $F_{\alpha, d_1, d_2}$ denote the lower critical value from the F distribution with $d_1$ and $d_2$ dfs and a significance level $\alpha$.
+
+a. $F < F_{1-\frac{\alpha}{2}, n_1 - 1, n_2 - 1}$ or $F > F_{\frac{\alpha}{2}, n_1 - 1, n_2 -1}$ for two-tailed test. 
+
+b. $F > F_{1-\alpha, n_1-1, n_2-1}$ for upper one-tailed test. 
+
+c. $F < F_{\alpha, n_1 - 1, n_2 -1}$ for lower one-tailed test. 
+
+
+5. \textbf{Power:}
+
+Let $F_{d_1, d_2}$ be the distribution function of the F distribution with $d_1$ and $d_2$ degrees of freedom. 
+
+Let $v_{d_1, d_2, A} = F^{-1}_{d_1, d_2}(A)$ be the inverse CDF evaluated at A for an F distribution with $d_1$ and $d_2$ dfs. 
+
+a. Two-Tailed Test
+
+$\lambda = 1 - F_{d_1, d_{2}}\{\frac{v_{d_1, d_2, 1-\alpha}}{(\frac{\sigma_1}{\sigma_2})^2}\} + F_{d_1, d_{2}}\{\frac{v_{d_1, d_2, \alpha}}{(\frac{\sigma_1}{\sigma_2})^2}\}$
+
+b. Upper One-Tailed Test
+
+$\lambda = F_{d_1, d_{2}}\{\frac{v_{d_1, d_2, 1-\alpha}}{(\frac{\sigma_1}{\sigma_2})^2}\}$ 
+
+
+c. Lower One-Tailed Test
+
+$\lambda = F_{d_1, d_{2}}\{\frac{v_{d_1, d_2, \alpha}}{(\frac{\sigma_1}{\sigma_2})^2}\}$ 
+
+
+
+
+
+
+# D. Calculation
+
+Data
+```{r}
+
+var1 <- 134.69
+
+var2 <- 185.61
+
+n1 <- 101
+
+n2 <- 95
+
+alpha <- 0.05
+
+var_p1 <- 155.38
+
+var_p2 <- 178.99
+
+mu1 <- 85.9
+
+mu2 <- 100.25
+
+```
+
+
+
+
+
+1. F Test for Equality of Two Population Variances
+
+$H_0: \sigma_1^2 = \sigma_2^2$
+
+$H_a: \sigma_1^2 \neq \sigma_2^2$
+
+Given: sample variances $s_1^2, s_2^2$, sample sizes $n_1, n_2$, significance level $\alpha$.
+
+
+```{r}
+
+variance_test <- function(var1, var2, n1, n2, alpha){
+  
+  F_obsved <- var1/var2
+  
+  F_crit_lower <- qf(alpha/2, n1-1, n2-1)
+  
+  if(F_obsved < F_crit_lower){
+    print("Reject H0")
+  }else{
+    print("Fail to reject H0")
+  }
+  
+}
+
+```
+
+
+
+
+2. Calculate Power of the F Test for Equality of Two Population Variances
+
+Given: sample variances $s_1^2, s_2^2$, sample sizes $n_1, n_2 > 2$, significance level $\alpha$, population variances $\sigma_1^2, \sigma_2^2$, population means $\mu_1, \mu_2$.
+
+```{r}
+
+cal_power <- function(var1, var2, n1, n2, alpha, var_p1, var_p2, mu1, mu2){
+  
+  ncp_obsved <- (mu1/var_p1)^2 + (mu2/var_p2)^2
+  
+  F_crit_upper <- qf(1-alpha/2, n1-1, n2-1)
+  
+  power <- pf(F_crit_upper, n1-1, n2-1, ncp_obsved, lower.tail = FALSE, log.p = FALSE )
+  
+  return(power)
+  
+  
+}
+
+```
+
+
