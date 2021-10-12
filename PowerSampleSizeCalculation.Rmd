@@ -144,61 +144,120 @@ variance_test <- function(var1, var2, n1, n2, alpha, test){
   }
   
   
+  
+  
   if(test == 1){
     
-    F_crit_lower <- qf(alpha, n1-1, n2-1, 
+     F_crit_lower <- qf(alpha, n1-1, n2-1, 
                        lower.tail = TRUE, log.p = FALSE)
+     
+     if(F_obsved < F_crit_lower){
+       
+        print(paste("F Test Statistic Observed:", F_obsved, sep = " "))
+        
+        print(paste("F Critical Value (Lower):", F_crit_lower, sep = " "))
+        
+        print("Result of Lower One-Sided Test: Reject H0")
+       
+     }else{
+       
+        print(paste("F Test Statistic Observed:", F_obsved, sep = " "))
+        
+        print(paste("F Critical Value (Lower):", F_crit_lower, sep = " "))
+        
+        print("Result of Lower One-Sided Test: Fail to reject H0")
+       
+     }
     
-    if(F_obsved < F_crit_lower){
-      print("Result of Lower One-Sided Test: Reject H0")
-    }else{
-      print("Result of Lower One-Sided Test: Fail to reject       H0")
-    }
     
-    if(test == 2){
-      
-      F_crit_upper <- qf(1-alpha, n1-1, n2-1,
+  }
+  
+  
+  
+  
+  if(test == 2){
+    
+    F_crit_upper <- qf(1-alpha, n1-1, n2-1,
                          lower.tail = TRUE, log.p = FALSE)
+    
+    if(F_obsved > F_crit_upper){
       
-      if(F_obsved > F_crit_upper){
+        print(paste("F Test Statistic Observed:", F_obsved, sep = " "))
+      
+        print(paste("F Critical Value (Upper):", F_crit_upper, sep = " "))
         
         print("Result of Upper One-Sided Test: Reject H0")
+      
+      
+    }else{
+      
+        print(paste("F Test Statistic Observed:", F_obsved, sep = " "))
         
-      } else{
+        print(paste("F Critical Value (Upper):", F_crit_upper, sep = " "))
         
-        print("Result of Upper One-Sided Test: Fail to              reject H0")
-        
-      }
+        print("Result of Upper One-Sided Test: Fail to reject H0")
+      
+      
     }
     
+  }
+  
+  
+  
+  if(test == 3){
     
-    if(test == 3){
-      
-      F_crit_lower <- qf(alpha/2, n1-1, n2-1, 
+     F_crit_lower <- qf(alpha/2, n1-1, n2-1, 
                        lower.tail = TRUE, log.p = FALSE)
-      
-      F_crit_upper <- qf(1 - alpha/2, n1-1, n2-1, 
+     
+     F_crit_upper <- qf(1 - alpha/2, n1-1, n2-1, 
                        lower.tail = TRUE, log.p = FALSE)
-      
-      if(F_obsved < F_crit_lower | F_obsved > F_crit_upper){
+     
+     if(F_obsved < F_crit_lower | F_obsved > F_crit_upper){
+       
+       
+        print(paste("F Test Statistic Observed:", F_obsved, sep = " "))
+        
+        print(paste("F Critical Value (Lower):", F_crit_lower, sep = " "))
+        
+        print(paste("F Critical Value (Upper):", F_crit_upper, sep = " "))
         
         print("Result of Two-Sided Test: Reject H0")
+       
+       
+     }else{
+       
+        print(paste("F Test Statistic Observed:", F_obsved, sep = " "))
         
-      }else{
+        print(paste("F Critical Value (Lower):", F_crit_lower, sep = " "))
         
-        print("Result of Two-Sided Test: Fail to              reject H0")
-      }
-      
-    }
+        print(paste("F Critical Value (Upper):", F_crit_upper, sep = " "))
+        
+        print("Result of Two-Sided Test: Fail to reject H0")
+       
+     }
+  
+  }
     
+  
 }
-  
-  
 
-  
-  
-  
-}
+```
+
+
+Verify:
+```{r}
+
+# Lower One-Sided Test
+variance_test(var1, var2, n1, n2, alpha, 1)
+
+
+# Upper One-Sided Test
+
+variance_test(var1, var2, n1, n2, alpha, 2)
+
+
+# Two-Sided Test
+variance_test(var1, var2, n1, n2, alpha, 3)
 
 ```
 
