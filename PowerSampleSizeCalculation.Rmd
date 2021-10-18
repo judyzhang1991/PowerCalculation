@@ -29,7 +29,11 @@ $\bar{x}_{i.} = \frac{\sum_{j=1}^{n_i}x_{ij}}{n_i}$: the group mean of the $i^{t
 
 $\alpha$: significance level (also is the Type I error rate). 
 
-$\lambda = \sum_{i=1}^{2}(\frac{\mu_i}{\sigma_i})^{2}$: the noncentrality parameter for F distribution. 
+$\lambda = \sum_{i=1}^{2}(\frac{\mu_i}{\sigma_i})^{2}$: the noncentrality parameter for F distribution.
+
+Note: in R, functions pf, qf, rf, etc. define noncentrality parameter of F distribution as:
+
+$\lambda = \sum_{i=1}^{2}(\mu_i)^2$
 
 
 # C. F Test for Equality of Two Variances ($k=2$)
@@ -274,7 +278,7 @@ Given: sample variances $s_1^2, s_2^2$, sample sizes $n_1, n_2 > 5$ (as var(F) o
 
 cal_power <- function(var1, var2, n1, n2, alpha, var_p1, var_p2, mu1, mu2, test){
   
-  ncp <- (mu1/var_p1)^2 + (mu2/var_p2)^2
+  ncp <- (mu1)^2 + (mu2)^2
   
   if(test == 1){
     
@@ -369,7 +373,7 @@ $Var\{F_{df_1, df_2, \lambda}\}$ does not exist for $df_2 \leq 4$
 
 cal_sample_size <- function(p, alpha, var_p1, var_p2, mu1, mu2, test, n_upper){
   
-  ncp <- (mu1/var_p1)^2 + (mu2/var_p2)^2
+  ncp <- (mu1)^2 + (mu2)^2
   
   if(test == 1){
     

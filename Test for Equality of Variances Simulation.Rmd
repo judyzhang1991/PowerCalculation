@@ -38,7 +38,7 @@ Generate population data for the treatment group:
 
 ```{r}
 NY = 1000
-sigmaY = 10
+sigmaY = 3
 muY = 0
 Y <- rnorm(NY, mean = muY, sd = sigmaY)
 ```
@@ -48,7 +48,7 @@ Y <- rnorm(NY, mean = muY, sd = sigmaY)
 Total Number of Iterations: 
 
 ```{r}
-total_itr <- 10000
+total_itr <- 1000000
 ```
 
 
@@ -245,27 +245,9 @@ for(i in (1:length(F_stats))){
 ```
 
 
-(2) Upper One-Sided Test
 
 
-```{r}
-upper_test_decision <- c()
-
-for(i in (1:length(F_stats))){
-  
-  if(F_stats[i] >= F_crit_up){
-    
-    upper_test_decision[i] <- 1
-  }
-  else{
-    
-    upper_test_decision[i] <- 0
-  }
-}
-```
-
-
-(3) Two-Sided Test
+(2) Two-Sided Test
 
 ```{r}
 twosided_test_decision <- c()
