@@ -29,6 +29,8 @@ $\bar{x}_{i.} = \frac{\sum_{j=1}^{n_i}x_{ij}}{n_i}$: the group mean of the $i^{t
 
 $\alpha$: significance level (also is the Type I error rate). 
 
+$\lambda = \sum_{i=1}^{2}(\frac{\mu_i}{\sigma_i})^{2}$: the noncentrality parameter for F distribution. 
+
 
 # C. F Test for Equality of Two Variances ($k=2$)
 
@@ -104,7 +106,7 @@ n2 <- 95
 
 alpha <- 0.05
 
-var_p1 <- 155.38
+var_p1 <- 5.38
 
 var_p2 <- 178.99
 
@@ -309,7 +311,7 @@ cal_power <- function(var1, var2, n1, n2, alpha, var_p1, var_p2, mu1, mu2, test)
     F_crit_lower <- qf(alpha/2, n1-1, n2-1, 
                        lower.tail = TRUE, log.p = FALSE)
     
-    power_lower <- pf(F_crit_lower, n1-1, n2-1, ncp = 
+    power_lower <- pf(F_crit_lower, n1-1, n2-1, ncp,
                         lower.tail = TRUE, log.p = FALSE)
     
     power <- power_lower + power_upper
@@ -317,26 +319,90 @@ cal_power <- function(var1, var2, n1, n2, alpha, var_p1, var_p2, mu1, mu2, test)
     print(paste("The power of the two-sided test is:", power, sep = " "))
   }
   
-
-  
 }
+
 
 ```
 
 
 
+Verify:
+```{r}
+
+
+# Lower One-Sided Test
+cal_power(var1, var2, n1, n2, alpha, 
+          var_p1, var_p2, mu1, mu2, 1)
+
+
+# Upper One-Sided Test
+
+cal_power(var1, var2, n1, n2, alpha, 
+          var_p1, var_p2, mu1, mu2, 2)
+
+
+# Two-Sided Test
+cal_power(var1, var2, n1, n2, alpha, 
+          var_p1, var_p2, mu1, mu2, 3)
+
+```
+
+
 
 3. Calculate Sample Size (assume same sample size for both treatment and control groups) for a Given Power of a F Test for Equality of Two Population Variances
 
-Given: sample variances $s_1^2, s_2^2$, power $\lambda$, significance level $\alpha$, population variances $\sigma_1^2, \sigma_2^2$, population means $\mu_1, \mu_2$, test (1 = lower one-sided test; 2 = upper one-sided test; 3 = two-sided test).
+Given: power $\pi$, significance level $\alpha$, population variances $\sigma_1^2, \sigma_2^2$, population means $\mu_1, \mu_2$, test (1 = lower one-sided test; 2 = upper one-sided test; 3 = two-sided test), and upper limit of $n_{upper}$ per group. 
+
+Note: variance of noncentral F distribution with degree of freedoms df1, df2, and ncp only exists for $df_2 > 4$:
+
+
+$E\{F_{df_1, df_2, \lambda}\} = \frac{df_2(df_1+\lambda)}{df_1(df_2 - 2)}$ for $df_2 > 2$
+
+$E\{F_{df_1, df_2, \lambda}\}$ does not exist for $df_2\leq 2$
+
+
+$Var\{F_{df_1, df_2, \lambda}\} = 2\frac{(df_1 + \lambda)^2 + (df_1 + 2\lambda)(df_2 - 2)}{(df_2 -2)^2(df_2 -4)}(\frac{df_2}{df_1})^2$ for $df_2 > 4$
+
+$Var\{F_{df_1, df_2, \lambda}\}$ does not exist for $df_2 \leq 4$
 
 ```{r}
 
-cal_sample_size <- function(var1, var2, lambda, alpha, var_p1, var_p2, mu1, mu2, test){
+cal_sample_size <- function(p, alpha, var_p1, var_p2, mu1, mu2, test, n_upper){
   
   ncp <- (mu1/var_p1)^2 + (mu2/var_p2)^2
   
   if(test == 1){
+    
+    # Set initial sample size per group as 5
+    
+    n <- 5
+    
+    F_crit_lower <- qf(alpha, n-1, n-1, 
+                       lower.tail = TRUE, log.p = FALSE)
+    
+    power <- pf(F_crit_lower, n-1, n-1, 
+                ncp, lower.tail = TRUE, log.p = FALSE)
+    
+   
+    
+    while(n <= n_upper & power < p){
+      
+      n <- n + 1
+      
+      F_crit_lower <- qf(alpha, n-1, n-1, 
+                      lower.tail = TRUE, log.p = FALSE)
+    
+      power <- pf(F_crit_lower, n-1, n-1, 
+                ncp, lower.tail = TRUE, log.p = FALSE)
+      
+    }
+    
+  }
+  
+  if(power >= p){
+    print(paste(paste(paste("Sample size (per group) needed to achieve the given power of", p, sep = " "), "is", sep = " "), n, sep = " "))}
+  else{
+    print(paste(paste(paste("Power of", p, sep = " "), "cannot be achieved with sample size (per group) less than"), n_upper, sep = " "))
     
   }
   
@@ -344,3 +410,13 @@ cal_sample_size <- function(var1, var2, lambda, alpha, var_p1, var_p2, mu1, mu2,
 }
 
 ```
+
+
+
+
+Verify:
+
+```{r}
+cal_sample_size(0.2, alpha, var_p1, var_p2, mu1, mu2, 1, 2000)
+```
+

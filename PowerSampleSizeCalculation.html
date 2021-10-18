@@ -185,6 +185,7 @@ pre code {
 <p><span class="math inline">\(\bar{x}_{..} = \frac{\sum_{i=1}^{k}\sum{j=1}^{n_i}x_{ij}}{N}\)</span>: the overall mean of the N observations.</p>
 <p><span class="math inline">\(\bar{x}_{i.} = \frac{\sum_{j=1}^{n_i}x_{ij}}{n_i}\)</span>: the group mean of the <span class="math inline">\(i^{th}\)</span> group.</p>
 <p><span class="math inline">\(\alpha\)</span>: significance level (also is the Type I error rate).</p>
+<p><span class="math inline">\(\lambda = \sum_{i=1}^{2}(\frac{\mu_i}{\sigma_i})^{2}\)</span>: the noncentrality parameter for F distribution.</p>
 </div>
 <div id="c.-f-test-for-equality-of-two-variances-k2" class="section level1">
 <h1>C. F Test for Equality of Two Variances (<span class="math inline">\(k=2\)</span>)</h1>
@@ -257,50 +258,225 @@ mu2 &lt;- 100.25</code></pre>
 <li>F Test for Equality of Two Population Variances</li>
 </ol>
 <p><span class="math inline">\(H_0: \sigma_1^2 = \sigma_2^2\)</span></p>
-<p><span class="math inline">\(H_a: \sigma_1^2 \neq \sigma_2^2\)</span></p>
-<p>Given: sample variances <span class="math inline">\(s_1^2, s_2^2\)</span>, sample sizes <span class="math inline">\(n_1, n_2\)</span>, significance level <span class="math inline">\(\alpha\)</span>.</p>
-<pre class="r"><code>variance_test &lt;- function(var1, var2, n1, n2, alpha){
+<p>Two-Sided Test: <span class="math inline">\(H_a: \sigma_1^2 \neq \sigma_2^2\)</span></p>
+<p>Upper One-Sided Test: <span class="math inline">\(H_a: \sigma_1^2 &gt; \sigma_2^2\)</span></p>
+<p>Lower One-Sided Test: <span class="math inline">\(H_a: \sigma_1^2 &lt; \sigma_2^2\)</span></p>
+<p>Given: sample variances <span class="math inline">\(s_1^2, s_2^2\)</span>, sample sizes <span class="math inline">\(n_1, n_2\)</span>, significance level <span class="math inline">\(\alpha\)</span>, test (1 = lower one-sided test; 2 = upper one-sided test; 3 = two-sided test).</p>
+<pre class="r"><code>variance_test &lt;- function(var1, var2, n1, n2, alpha, test){
   
-  F_obsved &lt;- var1/var2
+  # Large variance should be the numerator
   
-  F_crit_lower &lt;- qf(alpha/2, n1-1, n2-1)
-  
-  if(F_obsved &lt; F_crit_lower){
-    print(&quot;Reject H0&quot;)
-  }else{
-    print(&quot;Fail to reject H0&quot;)
+  if(var1 &gt; var2)
+     {F_obsved &lt;- var1/var2}
+  else{
+    F_obsved &lt;- var2/var1
   }
   
+  
+  
+  
+  if(test == 1){
+    
+     F_crit_lower &lt;- qf(alpha, n1-1, n2-1, 
+                       lower.tail = TRUE, log.p = FALSE)
+     
+     if(F_obsved &lt; F_crit_lower){
+       
+        print(paste(&quot;F Test Statistic Observed:&quot;, F_obsved, sep = &quot; &quot;))
+        
+        print(paste(&quot;F Critical Value (Lower):&quot;, F_crit_lower, sep = &quot; &quot;))
+        
+        print(&quot;Result of Lower One-Sided Test: Reject H0&quot;)
+       
+     }else{
+       
+        print(paste(&quot;F Test Statistic Observed:&quot;, F_obsved, sep = &quot; &quot;))
+        
+        print(paste(&quot;F Critical Value (Lower):&quot;, F_crit_lower, sep = &quot; &quot;))
+        
+        print(&quot;Result of Lower One-Sided Test: Fail to reject H0&quot;)
+       
+     }
+    
+    
+  }
+  
+  
+  
+  
+  if(test == 2){
+    
+    F_crit_upper &lt;- qf(1-alpha, n1-1, n2-1,
+                         lower.tail = TRUE, log.p = FALSE)
+    
+    if(F_obsved &gt; F_crit_upper){
+      
+        print(paste(&quot;F Test Statistic Observed:&quot;, F_obsved, sep = &quot; &quot;))
+      
+        print(paste(&quot;F Critical Value (Upper):&quot;, F_crit_upper, sep = &quot; &quot;))
+        
+        print(&quot;Result of Upper One-Sided Test: Reject H0&quot;)
+      
+      
+    }else{
+      
+        print(paste(&quot;F Test Statistic Observed:&quot;, F_obsved, sep = &quot; &quot;))
+        
+        print(paste(&quot;F Critical Value (Upper):&quot;, F_crit_upper, sep = &quot; &quot;))
+        
+        print(&quot;Result of Upper One-Sided Test: Fail to reject H0&quot;)
+      
+      
+    }
+    
+  }
+  
+  
+  
+  if(test == 3){
+    
+     F_crit_lower &lt;- qf(alpha/2, n1-1, n2-1, 
+                       lower.tail = TRUE, log.p = FALSE)
+     
+     F_crit_upper &lt;- qf(1 - alpha/2, n1-1, n2-1, 
+                       lower.tail = TRUE, log.p = FALSE)
+     
+     if(F_obsved &lt; F_crit_lower | F_obsved &gt; F_crit_upper){
+       
+       
+        print(paste(&quot;F Test Statistic Observed:&quot;, F_obsved, sep = &quot; &quot;))
+        
+        print(paste(&quot;F Critical Value (Lower):&quot;, F_crit_lower, sep = &quot; &quot;))
+        
+        print(paste(&quot;F Critical Value (Upper):&quot;, F_crit_upper, sep = &quot; &quot;))
+        
+        print(&quot;Result of Two-Sided Test: Reject H0&quot;)
+       
+       
+     }else{
+       
+        print(paste(&quot;F Test Statistic Observed:&quot;, F_obsved, sep = &quot; &quot;))
+        
+        print(paste(&quot;F Critical Value (Lower):&quot;, F_crit_lower, sep = &quot; &quot;))
+        
+        print(paste(&quot;F Critical Value (Upper):&quot;, F_crit_upper, sep = &quot; &quot;))
+        
+        print(&quot;Result of Two-Sided Test: Fail to reject H0&quot;)
+       
+     }
+  
+  }
+    
+  
 }</code></pre>
+<p>Verify:</p>
+<pre class="r"><code># Lower One-Sided Test
+variance_test(var1, var2, n1, n2, alpha, 1)</code></pre>
+<pre><code>## [1] &quot;F Test Statistic Observed: 1.37805330759522&quot;
+## [1] &quot;F Critical Value (Lower): 0.715469976013101&quot;
+## [1] &quot;Result of Lower One-Sided Test: Fail to reject H0&quot;</code></pre>
+<pre class="r"><code># Upper One-Sided Test
+
+variance_test(var1, var2, n1, n2, alpha, 2)</code></pre>
+<pre><code>## [1] &quot;F Test Statistic Observed: 1.37805330759522&quot;
+## [1] &quot;F Critical Value (Upper): 1.40050857847982&quot;
+## [1] &quot;Result of Upper One-Sided Test: Fail to reject H0&quot;</code></pre>
+<pre class="r"><code># Two-Sided Test
+variance_test(var1, var2, n1, n2, alpha, 3)</code></pre>
+<pre><code>## [1] &quot;F Test Statistic Observed: 1.37805330759522&quot;
+## [1] &quot;F Critical Value (Lower): 0.670791388465599&quot;
+## [1] &quot;F Critical Value (Upper): 1.49452438493919&quot;
+## [1] &quot;Result of Two-Sided Test: Fail to reject H0&quot;</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>Calculate Power of the F Test for Equality of Two Population Variances</li>
 </ol>
-<p>Given: sample variances <span class="math inline">\(s_1^2, s_2^2\)</span>, sample sizes <span class="math inline">\(n_1, n_2 &gt; 5\)</span> (as var(F) only exists when <span class="math inline">\(v_2 = n_2 -1 &gt; 4\)</span>), significance level <span class="math inline">\(\alpha\)</span>, population variances <span class="math inline">\(\sigma_1^2, \sigma_2^2\)</span>, population means <span class="math inline">\(\mu_1, \mu_2\)</span>.</p>
-<pre class="r"><code>cal_power &lt;- function(var1, var2, n1, n2, alpha, var_p1, var_p2, mu1, mu2){
+<p>Given: sample variances <span class="math inline">\(s_1^2, s_2^2\)</span>, sample sizes <span class="math inline">\(n_1, n_2 &gt; 5\)</span> (as var(F) only exists when <span class="math inline">\(v_2 = n_2 -1 &gt; 4\)</span>), significance level <span class="math inline">\(\alpha\)</span>, population variances <span class="math inline">\(\sigma_1^2, \sigma_2^2\)</span>, population means <span class="math inline">\(\mu_1, \mu_2\)</span>,test (1 = lower one-sided test; 2 = upper one-sided test; 3 = two-sided test).</p>
+<pre class="r"><code>cal_power &lt;- function(var1, var2, n1, n2, alpha, var_p1, var_p2, mu1, mu2, test){
   
-  ncp_obsved &lt;- (mu1/var_p1)^2 + (mu2/var_p2)^2
+  ncp &lt;- (mu1/var_p1)^2 + (mu2/var_p2)^2
   
-  F_crit_upper &lt;- qf(1-alpha/2, n1-1, n2-1)
+  if(test == 1){
+    
+    F_crit_lower &lt;- qf(alpha, n1-1, n2-1, 
+                       lower.tail = TRUE, log.p = FALSE)
+    
+    power &lt;- pf(F_crit_lower, n1-1, n2-1, ncp, 
+                lower.tail =  TRUE, log.p = FALSE)
+    
+    print(paste(&quot;The power of the lower one-sided test is:&quot;, power, sep = &quot; &quot;))
+  }
   
-  power &lt;- pf(F_crit_upper, n1-1, n2-1, ncp_obsved, lower.tail = FALSE, log.p = FALSE )
   
-  return(power)
+  if(test == 2){
+    
+    F_crit_upper &lt;- qf(1 - alpha, n1-1, n2-1, 
+                       lower.tail = TRUE, log.p = FALSE)
+    
+    power &lt;- pf(F_crit_upper, n1-1, n2-1, ncp, 
+                lower.tail =  FALSE, log.p = FALSE)
+    
+    print(paste(&quot;The power of the upper one-sided test is:&quot;, power, sep = &quot; &quot;))
+  }
   
+  
+  if(test == 3){
+    
+    F_crit_upper &lt;- qf(1 - alpha/2, n1-1, n2-1, 
+                       lower.tail = TRUE, log.p = FALSE)
+    
+    power_upper &lt;- pf(F_crit_upper, n1-1, n2-1, ncp, 
+                lower.tail =  FALSE, log.p = FALSE)
+    
+    F_crit_lower &lt;- qf(alpha/2, n1-1, n2-1, 
+                       lower.tail = TRUE, log.p = FALSE)
+    
+    power_lower &lt;- pf(F_crit_lower, n1-1, n2-1, ncp,
+                        lower.tail = TRUE, log.p = FALSE)
+    
+    power &lt;- power_lower + power_upper
+    
+    print(paste(&quot;The power of the two-sided test is:&quot;, power, sep = &quot; &quot;))
+  }
   
 }</code></pre>
+<p>Verify:</p>
+<pre class="r"><code># Lower One-Sided Test
+cal_power(var1, var2, n1, n2, alpha, 
+          var_p1, var_p2, mu1, mu2, 1)</code></pre>
+<pre><code>## [1] &quot;The power of the lower one-sided test is: 0.046960002383503&quot;</code></pre>
+<pre class="r"><code># Upper One-Sided Test
+
+cal_power(var1, var2, n1, n2, alpha, 
+          var_p1, var_p2, mu1, mu2, 2)</code></pre>
+<pre><code>## [1] &quot;The power of the upper one-sided test is: 0.0531699880835563&quot;</code></pre>
+<pre class="r"><code># Two-Sided Test
+cal_power(var1, var2, n1, n2, alpha, 
+          var_p1, var_p2, mu1, mu2, 3)</code></pre>
+<pre><code>## [1] &quot;The power of the two-sided test is: 0.0500872319223192&quot;</code></pre>
 <ol start="3" style="list-style-type: decimal">
-<li>Calculate Sample Size for a Given Power of a F Test for Equality of Two Population Variances</li>
+<li>Calculate Sample Size (assume same sample size for both treatment and control groups) for a Given Power of a F Test for Equality of Two Population Variances</li>
 </ol>
-<p>Given: sample variances <span class="math inline">\(s_1^2, s_2^2\)</span>, sample sizes <span class="math inline">\(n_1, n_2 &gt; 2A\)</span>, significance level <span class="math inline">\(\alpha\)</span>, population variances <span class="math inline">\(\sigma_1^2, \sigma_2^2\)</span>, population means <span class="math inline">\(\mu_1, \mu_2\)</span>.</p>
-<pre class="r"><code>cal_power &lt;- function(var1, var2, n1, n2, alpha, var_p1, var_p2, mu1, mu2){
+<p>Given: power <span class="math inline">\(\pi\)</span>, significance level <span class="math inline">\(\alpha\)</span>, population variances <span class="math inline">\(\sigma_1^2, \sigma_2^2\)</span>, population means <span class="math inline">\(\mu_1, \mu_2\)</span>, test (1 = lower one-sided test; 2 = upper one-sided test; 3 = two-sided test), and upper limit of <span class="math inline">\(n_{upper}\)</span> per group.</p>
+<p>Note: variance of noncentral F distribution with degree of freedoms df1, df2, and ncp only exists for <span class="math inline">\(df2 &gt; 4\)</span>:</p>
+<p><span class="math inline">\(E\{F_{df_1, df_2, \lambda}\} = \frac{df2(df1+\lambda)}{df1(df2 - 2)}\)</span> for <span class="math inline">\(df2 &gt; 2\)</span></p>
+<p><span class="math inline">\(E\{F_{df_1, df_2, \lambda}\}\)</span> does not exist for <span class="math inline">\(df_2\leq 2\)</span></p>
+<p><span class="math inline">\(Var\{F_{df_1, df_2, \lambda}\} = 2\frac{(df_1 + \lambda)^2 + (df_1 + 2\lambda)(df_2 - 2)}{(df_2 -2)^2(df_2 -4)}(\frac{df_2}{df_1})^2\)</span> for <span class="math inline">\(df_2 &gt; 4\)</span></p>
+<p><span class="math inline">\(Var\{F_{df_1, df_2, \lambda}\}\)</span> does not exist for <span class="math inline">\(df_2 \leq 4\)</span></p>
+<pre class="r"><code>cal_sample_size &lt;- function(lambda, alpha, var_p1, var_p2, mu1, mu2, test, n_upper){
   
-  ncp_obsved &lt;- (mu1/var_p1)^2 + (mu2/var_p2)^2
+  ncp &lt;- (mu1/var_p1)^2 + (mu2/var_p2)^2
   
-  F_crit_upper &lt;- qf(1-alpha/2, n1-1, n2-1)
-  
-  power &lt;- pf(F_crit_upper, n1-1, n2-1, ncp_obsved, lower.tail = FALSE, log.p = FALSE )
-  
-  return(power)
+  if(test == 1){
+    
+    # Set initial sample size per group as 5
+    
+    n &lt;- 5
+    while(n &lt;= n_upper){
+      
+      
+    }
+    
+  }
   
   
 }</code></pre>
