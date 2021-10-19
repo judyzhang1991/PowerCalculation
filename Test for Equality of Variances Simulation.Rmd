@@ -7,6 +7,14 @@ output: html_document
 
 
 
+```{r load_pkgs}
+
+library(tidyverse)
+library(skimr)
+
+```
+
+
 
 
 # A. Simulation 
@@ -14,108 +22,141 @@ output: html_document
 
 Set Seed:
 
-```{r}
+```{r set_seed}
 set.seed(990970215)
 ```
 
 
-Generate the following:
+Assume population parameters are given below:
 
-Control Group: $N_1 = 1000$, $n_1 = 30$, $X\sim N(\mu_1 = 0, \sigma_1^2 = 1)$.
+Control Group: $N_X$, $n_X$, $X\sim N(\mu_X, \sigma_X^2)$.
 
-Treatment Group: $N_2 = 1000$, $n_2 = 30$, $Y\sim N(\mu_2 = 0, \sigma_2^2)$.
-
-Generate population data for the control group: 
-```{r}
-NX = 1000
-sigmaX = 1
-muX = 0
-X <- rnorm(NX, mean = muX, sd = sigmaX)
-```
-
-
-Generate population data for the treatment group:
-
-```{r}
-NY = 1000
-sigmaY = 3
-muY = 0
-Y <- rnorm(NY, mean = muY, sd = sigmaY)
-```
+Treatment Group: $N_Y$, $n_Y$, $Y\sim N(\mu_Y, \sigma_Y^2)$.
 
 
 
-Total Number of Iterations: 
+Function generate_N_sample: Generate sample data (with sample variance and sample means) for the control group and the treatment group, that is to randomly sample nX and nY observations from the control group population/distribution and the treatment group population/distribution, respectively.  
 
-```{r}
-total_itr <- 1000000
-```
+Arguments: 
+
+N: total number of samples of size nX and nY to generate for the control group and the treatment group. 
+
+nX, nY: sample sizes.
+
+sigmaX, sigmaY: population standard deviations.
+
+muX, muY: population means.
+
+distX, distY: population distributions with default values set to "normal".
+
+"normal" - the normal distribution.
+
+Return: 
+
+X_samples, X_sample_means, X_sample_sds, Y_samples, Y_sample_means, Y_sample_sds: generated sample observations (with sample means and sample variances) for the control group and the treatment group. 
 
 
-Sample $n = 30$ from the control group 10000 Times:
-```{r}
+```{r generate_N_sample}
 
-nx = 30
-
-
-x_samples <- list()
-
-sample_means_x <- c()
-
-sample_sds_x <- c()
-
-
-itr <- 0
-
-while(itr < total_itr){
+generate_N_sample <- function(N, nX, nY, sigmaX, sigmaY, muX, muY, distX = "normal", distY = "normal"){
   
-  itr <- itr + 1
+  X_samples <- list()
   
-  x <- sample(X, nx, replace = FALSE)
+  X_sample_means <- c()
   
-  x_samples[[itr]] <- x
+  X_sample_sds <- c()
   
-  sample_means_x[itr] <- mean(x) 
+  Y_samples <- list()
   
-  sample_sds_x[itr] <- sd(x)
+  Y_sample_means <- c()
   
-}
-
-
-
-
-```
-
-
-Sample $n = 30$ from the treatment group 10000 Times:
-
-```{r}
-
-ny = 30
-
-
-y_samples <- list()
-
-sample_means_y <- c()
-
-sample_sds_y <- c()
-
-
-itr <- 0
-
-while(itr < total_itr){
+  Y_sample_sds <- c()
   
-  itr <- itr + 1
+
   
-  y <- sample(Y, ny, replace = FALSE)
+  if(distX == "normal"){
+    
+    for(i in 1:N){
+      
+      X_sample <- rnorm(nX, mean = muX, sd = sigmaX)
+      
+      X_samples[[i]] <- X_sample
+      
+      X_sample_means[i] <- mean(X_sample)
+      
+      X_sample_sds[i] <- sd(X_sample)
+      
+    }
+    
+  }
   
-  y_samples[[itr]] <- y
+   if(distY == "normal"){
+     
+      for(i in 1:N){
+      
+      Y_sample <- rnorm(nY, mean = muY, sd = sigmaY)
+      
+      Y_samples[[i]] <- Y_sample
+      
+      Y_sample_means[i] <- mean(Y_sample)
+      
+      Y_sample_sds[i] <- sd(Y_sample)
+      
+    }
+    
+   }
   
-  sample_means_y[itr] <- mean(y) 
-  
-  sample_sds_y[itr] <- sd(y)
+  return(list("X_samples" = X_samples, "X_sample_means" = X_sample_means, "X_sample_sds" = X_sample_sds, "Y_samples" = Y_samples, "Y_sample_means" = Y_sample_means, "Y_sample_sds" = Y_sample_sds))
   
 }
+
+```
+
+
+
+Generate Sample Data
+```{r run_gen_N_sample}
+
+
+# Parameter Sets: 10000 samples of size 30 for the control group and for the treatment group 
+
+N <- 10000
+
+nX <- 30
+nY <- 30
+sigmaX <- 1
+sigmaY <- 1.5
+muX <- 0
+muY <- 0
+distX <- "normal"
+distY <- "normal"
+
+
+N_samples <- generate_N_sample(N, nX, nY, sigmaX, sigmaY, muX, muY, distX, distY)
+
+X_samples <- N_samples$X_samples
+
+X_sample_means <- N_samples$X_sample_means
+
+X_sample_sds <- N_samples$X_sample_sds
+
+
+Y_samples <- N_samples$Y_samples
+
+Y_sample_means <- N_samples$Y_sample_means
+
+Y_sample_sds <- N_samples$Y_sample_sds
+
+
+######### EDA OF SAMPLES ###########
+summary(X_sample_means)
+summary(Y_sample_means)
+
+summary(X_sample_sds)
+summary(Y_sample_sds)
+
+
+
 ```
 
 
@@ -123,198 +164,191 @@ while(itr < total_itr){
 
 B.Statistical Test
 
-1. F Ratio Test for Equality of Two Variances
 
-a. Signifiance Level
-```{r}
+Function run_N_stat_test: run statistical test (with decisions) on each of N pairs of the control group samples of size nX and the treatment group samples of size nY. 
+
+Arguments: 
+
+nX, nY: sample sizes.
+
+X_sample_means, Y_sample_means: lists of N samples means calculated for each sample of size nX or nY for the control group or the treatment group. 
+
+X_sample_sds, Y_sample_sds: lists of N samples sds calculated for each sample of size nX or nY for the control group or the treatment group. 
+
+test: type of test with default to be the F ratio test. 
+"F" - the F ratio test. 
+"L" - the Levene's test. 
+
+side: determine one-sided or two-sided test. 
+1 - One sided test (upper or lower will be determined by sample variances).
+Lower One-Sided Test: 
+$H_a: \sigma_X^2 <\sigma_Y^2\Rightarrow\frac{\sigma_X^2}{\sigma_Y^2} < 1$
+Upper One-Sided Test:
+$H_a: \sigma_X^2 >\sigma_Y^2\Rightarrow\frac{\sigma_X^2}{\sigma_Y^2} > 1$
+2 - Two sided test.
+$H_a: \sigma_X^2 \neq \sigma_Y^2\Rightarrow \frac{\sigma_X^2}{\sigma_Y^2}\neq 1$.
+
+Return: 
+F_stats: a total of N observed F ratio statistics. 
+test_decisions: a list of test result with 1 meaning reject $H_0$ and 0 means fail to reject $H_0$. 
+
+```{r run_N_stat_test}
+
+run_N_stat_test <- function(nX, nY, X_sample_means, X_sample_sds, Y_sample_means, Y_sample_sds, test, side){
+  
+  # Conduct F Ratio Test
+  if(test == "F"){
+    
+    F_stats <- X_sample_sds/Y_sample_sds
+    
+    test_descisions <- c()
+    
+    
+    # Conduct One Sided Test
+    if(side == 1){
+        F_crit_low <- qf(alpha, nX-1, nY-1, lower.tail = TRUE, log.p = FALSE)
+    
+        F_crit_up <- qf(1-alpha, nX-1, nY-1, lower.tail = TRUE, log.p = FALSE)
+        
+      for(i in 1:length(F_stats)){
+        
+        # Conduct lower one sided test
+        if(X_sample_sds[i] <= Y_sample_sds[i]){
+          
+          test_descisions[i] <- ifelse(F_stats[i] <= F_crit_low, 1, 0)
+          
+        }
+        
+        # Conduct upper one sided test
+        else{
+          
+          test_descisions[i] <- ifelse(F_stats[i] >= F_crit_up, 1, 0)
+          
+        }
+        
+      }
+      
+    }
+    
+    
+    # Conduct Two Sided Test
+    if(side == 2){
+      
+      F_crit_twolow <- qf(alpha/2, nX-1, nY-1, lower.tail = TRUE, log.p = FALSE)
+    
+      F_crit_twoup <- qf(1-alpha/2, nX-1, nY-1, lower.tail = TRUE, log.p = FALSE)
+      
+      for(i in 1:length(F_stats)){
+        
+        test_descisions[i] <- ifelse((F_stats[i] <= F_crit_twolow | F_stats[i] >= F_crit_twoup), 1, 0)
+      }
+    }
+    
+  }
+  
+  return(list("F_stats" = F_stats, "test_decisions" = test_descisions))
+  
+}
+
+```
+
+
+Run F Ratio Test for Two Equal Variances
+```{r run_run_N_stat_test}
 
 alpha <- 0.05
 
+test <- "F"
+
+side <- 1
+
+tests <- run_N_stat_test(nX, nY, X_samples_means, X_sample_sds, Y_sample_means, Y_sample_sds, test, side)
+
+F_stats <- tests$F_stats
+
+test_descisions <- tests$test_decisions
+
+
+####### EDA OF TEST RESULTS #####
+
+sum(test_descisions)
+
 ```
 
 
 
-b. Calculate F Test Statistic
+Calculate Power for F Ratio Test for Two Equal Variances
 ```{r}
+# Empirical Power
 
-F_stats <- c()
+emp_power <- sum(test_descisions)/N
 
-test_num <- 0
+emp_power
 
-total_test_num <- length(x_samples)
 
-while(test_num < total_test_num){
-  
-  test_num <- test_num + 1
-    
-    F_stats[test_num] <- (sample_sds_x[test_num]^2)/(sample_sds_y[test_num]^2)
-  
-  
-  
-}
+# Theoretical Power
+
+## Lower One Sided Test
+F_crit_low <- qf(alpha, nX-1, nY-1, lower.tail = TRUE, log.p = FALSE)
+
+# See qf function documentation
+ncp <- muX^2 + muY^2
+
+theo_power_low <- pf(F_crit_low, nX-1, nY-1, ncp = ncp, lower.tail = TRUE, log.p = FALSE)
+
+theo_power_low
+
+
+## Upper One Sided Test
+F_crit_up <- qf(1-alpha, nX-1, nY-1, lower.tail = TRUE, log.p = FALSE)
+
+
+theo_power_up <- pf(F_crit_up, nX-1, nY-1, ncp = ncp, lower.tail = FALSE, log.p = FALSE)
+
+theo_power_up
+
+
+## Two Sided Test
+F_crit_twolow <- qf(alpha/2, nX-1, nY-1, lower.tail = TRUE, log.p = FALSE)
+
+theo_power_twolow <- pf(F_crit_twolow, nX-1, nY-1, lower.tail = TRUE, log.p = FALSE)
+
+F_crit_twoup <- qf(1-alpha/2, nX-1, nY-1, lower.tail = TRUE, log.p = FALSE)
+
+
+theo_power_twoup <- pf(F_crit_twoup, nX-1, nY-1, ncp = ncp, lower.tail = FALSE, log.p = FALSE)
+
+
+theo_power_two <- theo_power_twolow + theo_power_twoup
+
+theo_power_two
 
 
 
 ```
 
 
-c. Calculate F Critical Value
-
-(1) Lower One-Sided Test
-
-$H_a: \sigma_X^2 < \sigma_Y^2 \Rightarrow \frac{\sigma_X^2}{\sigma_Y^2} < 1$
-
+Plot Null and Alternative F Distributions
 ```{r}
-F_crit_low <- qf(alpha, nx-1, ny-1, lower.tail = TRUE, log.p = FALSE)
-```
+x <- rf(100000, df1 = nX-1, df2 = nY-1)
+y <- rf(100000, df1 = nX-1, df2 = nY-1, ncp = ncp)
+hist(x, 
+     breaks = 'Scott', 
+     freq = FALSE, 
+     xlim = c(0,3), 
+     ylim = c(0,2),
+     xlab = '', 
+     main = ("Histogram of F Distribution"), cex.main=0.9)
 
+hist(y, 
+     breaks = 'Scott', 
+     add = TRUE,
+     freq = FALSE,
+     col = "red")
 
-(2) Upper One-Sided Test
+curve(df(x, df1 = nX-1, df2 = nY-1), from = 0, to = 4, n = 5000, col= 'pink', lwd=2, add = TRUE)
 
-$H_a: \sigma_X^2 > \sigma_Y^2 \Rightarrow \frac{\sigma_X^2}{\sigma_Y^2} > 1$
-
-```{r}
-F_crit_up <- qf(1-alpha, nx-1, ny-1, lower.tail = TRUE, log.p = FALSE)
-```
-
-
-(3) Two-Sided Test
-
-```{r}
-F_crit_two <- c()
-
-F_crit_two_low <- qf(alpha/2, nx-1, ny-1, lower.tail = TRUE, log.p = FALSE)
-
-F_crit_two_up <- qf(1-alpha/2, nx-1, ny-1, lower.tail = TRUE, log.p = FALSE)
-
-F_crit_two[1] <- F_crit_two_low
-
-F_crit_two[2] <- F_crit_two_up
-```
-
-
-
-d. Make Decision
-
-Reject $H_0$ will be coded as $1$.
-Fail to reject $H_0$ will be coded as $0$.
-
-(1) One-Sided Test
-
-First determine which of the one-sided test to use:
-
-```{r}
-onesided_test_decision <- c()
-
-for(i in (1:length(F_stats))){
-  
-  #If sample variance of the control group is less than the treatment group: use lower one-sided test.
-  
-  if(sample_sds_x[i]^2 < sample_sds_y[i]^2){
-    
-     if(F_stats[i] <= F_crit_low){
-    
-        # Reject H0
-        onesided_test_decision[i] <- 1
-     }
-    else{
-    
-        # Fail to reject H0
-        onesided_test_decision[i] <- 0
-    }
-    
-  }
-  #If sample variance of the control group is greater than the treatment group: use upper one-sided test.
-  else{
-    
-    if(F_stats[i] >= F_crit_up){
-    
-        onesided_test_decision[i] <- 1
-     }
-    else{
-    
-        onesided_test_decision[i] <- 0
-    }
-    
-    
-  }
-  
- 
-}
+curve(df(y, df1 = nX-1, df2 = nY-1, ncp = ncp), from = 0, to = 4, n = 5000, col= 'pink', lwd=2, add = TRUE)
 
 ```
 
-
-
-
-(2) Two-Sided Test
-
-```{r}
-twosided_test_decision <- c()
-
-for(i in (1:length(F_stats))){
-  
-  if(F_stats[i] <= F_crit_two[1] | F_stats[i] >= F_crit_two[2]){
-    
-    twosided_test_decision[i] <- 1
-  }
-  else{
-    
-    twosided_test_decision[i] <- 0
-  }
-}
-
-```
-
-
-e. Calculate Empirical Power
-
-As the truth is always set that $\sigma_1^2\neq\sigma_2^2$, the empirical power of the F ratio test will be given by:
-
-Empirical Power = Number of Times $H_0$ Rejected (sum of test decision)/Total Number of Times Test Ran (test_num)
-
-To determine which test to use: 
-
-If sample variance of the control group is LESS than the sample variance of the treatment group (i.e. $s_X^2 < s_6^2$), use the lower one-sided test (i.e. $H_a: \sigma_X^2 < \sigma_Y^2\Rightarrow\frac{\sigma_X^2}{\sigma_Y^2} < 1$).
-
-If sample variance of the control group is GREATER than the sample variance of the treatment group (i.e. $s_X^2 > s_6^2$), use the upper one-sided test (i.e. $H_a: \sigma_X^2 > \sigma_Y^2\Rightarrow\frac{\sigma_X^2}{\sigma_Y^2} > 1$).
-
-
-
-(1) Lower One-Sided Test
-```{r}
-
-#
-
-emp_power_low <- sum(lower_test_decision)/test_num
-
-
-```
-
-
-
-
-(2) Upper One-Sided Test
-```{r}
-
-#
-
-emp_power_up <- sum(upper_test_decision)/test_num
-
-
-
-
-```
-
-
-
-(3) Two-Sided Test
-```{r}
-
-#
-
-emp_power_two <- sum(twosided_test_decision)/test_num
-
-
-```
-2. Levene's Test for Equality of Variances

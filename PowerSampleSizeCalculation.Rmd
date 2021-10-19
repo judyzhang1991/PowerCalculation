@@ -110,7 +110,7 @@ n2 <- 95
 
 alpha <- 0.05
 
-var_p1 <- 5.38
+var_p1 <- 150.38
 
 var_p2 <- 178.99
 
@@ -141,15 +141,8 @@ Given: sample variances $s_1^2, s_2^2$, sample sizes $n_1, n_2$, significance le
 
 variance_test <- function(var1, var2, n1, n2, alpha, test){
   
-  # Large variance should be the numerator
-  
-  if(var1 > var2)
-     {F_obsved <- var1/var2}
-  else{
-    F_obsved <- var2/var1
-  }
-  
-  
+  # Calculate observed F-stat
+  F_obsved <- var1/var2
   
   
   if(test == 1){
