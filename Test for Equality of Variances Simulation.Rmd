@@ -330,25 +330,20 @@ theo_power_two
 
 Plot Null and Alternative F Distributions
 ```{r}
-x <- rf(100000, df1 = nX-1, df2 = nY-1)
-y <- rf(100000, df1 = nX-1, df2 = nY-1, ncp = ncp)
-hist(x, 
-     breaks = 'Scott', 
-     freq = FALSE, 
-     xlim = c(0,3), 
-     ylim = c(0,2),
-     xlab = '', 
-     main = ("Histogram of F Distribution"), cex.main=0.9)
 
-hist(y, 
-     breaks = 'Scott', 
-     add = TRUE,
-     freq = FALSE,
-     col = "red")
+n <- 10000
+null_ratio <- data.frame(rf(n, nX-1, nY-1, ncp))
+alt_ratio <- data.frame(rf(n, nX-1, nY-1, ncp))
 
-curve(df(x, df1 = nX-1, df2 = nY-1), from = 0, to = 4, n = 5000, col= 'pink', lwd=2, add = TRUE)
 
-curve(df(y, df1 = nX-1, df2 = nY-1, ncp = ncp), from = 0, to = 4, n = 5000, col= 'pink', lwd=2, add = TRUE)
+
+ggplot(data = X_dat, mapping = aes(X_sample_sds)) + 
+  geom_density(color = "red") + 
+  geom_density(data = Y_dat, mapping = aes(Y_sample_sds), color = "blue") +
+  geom_vline(xintercept = null_ratio, color = "red") + 
+  geom_vline(xintercept = true_ratio, color = "blue")
+  
+  
 
 ```
 

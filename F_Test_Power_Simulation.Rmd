@@ -1,0 +1,124 @@
+---
+title: "F_Test_Power_Simulation"
+author: "Jingyang(Judy) Zhang"
+date: "10/25/2021"
+output: html_document
+---
+
+
+In this simulation, we will try different combinations of values of the three parameters ($n_0$: control group sample size; $n_1$: treatment group sample size; $\phi = \frac{\sigma_1^2}{\sigma_0^2}$: ratio of population variances of the treatment group over the control group).
+
+
+The power can be calculated by:
+
+$Pr(F > \phi F_{n_1 -1, n_0 -1})$ 
+
+where $F = \frac{s_1^2}{s_0^2} = \frac{MSE_1}{MSE_0}$
+
+
+Function: cal_power() calculates power for a two-sided F-test for equality of two variances. 
+
+Arguments: 
+var1: population variance for the treatment group.
+var0: population variance for the control group. 
+s1: sample variance for the treatment group.
+s0 sample variance for the control group. 
+n1: sample size for the treatment group.
+n0: sample size for the control group. 
+alpha: signifiance level for the F-test of equality of two population variances. 
+
+
+```{r cal_power}
+
+cal_power <- function(var1, var0, s1, s0, n1, n0, alpha){
+  
+
+  
+  F_stat <- s1^2/s0^2
+  
+  
+  phi <- var1^2/var0^2
+  
+  F_crit_low <- qf(alpha/2, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
+  
+  F_crit_up <- qf(1 - alpha/2, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
+  
+  p_low <- pf(phi*F_crit_low, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
+  
+  p_up <- pf(phi*F_crit_up, n1-1, n0-1, lower.tail = FALSE, log.p = FALSE)
+  
+  power <- p_low + p_up
+  
+  return(power)
+  
+  
+}
+
+
+```
+
+
+Test cal_power() Function
+
+Assume $X\sim N(\mu_0, \sigma_0^2)$ is the control group population and $Y\sim N(\mu_1, \sigma_1^2)$ is the treatment group population.
+
+We will be randomly drawing a sample of size n0 from the control group population and a sample of size n1 from the treatment group population. 
+
+
+
+Test Data:
+$X\sim N(0, 1)$ 
+
+$Y\sim N(0, 10)$  
+
+$n_0 = n_1 = 30$
+
+```{r test_cal_power}
+
+var1 <- 180
+var0 <- 175
+mu1 <- 0
+mu0 <- 0 
+
+
+n1 <- 30
+n0 <- 30
+
+
+trt_sample <- rnorm(n1, mean = mu1, sd = var1)
+ctrl_sample <- rnorm(n0, mean = mu0, sd = var0)
+
+s1 <- sd(trt_sample)
+s0 <- sd(ctrl_sample)
+
+cal_power(var1, var0, s1, s0, n1, n0, 0.05)
+
+```
+
+
+
+Function: simulation()
+
+Arguments:
+
+var1_list: a vector containing a list of population variances for different treatment groups. 
+
+var0_list: a vector containing a list of population variances for different control groups. 
+
+s1_list: a vector containing a list of sample variances for different treatment group samples. 
+
+s0_list: a vector containing a list of sample variances for different control group samples. 
+
+n1_list: a vector containing a list of sample sizes for different treatment group samples. 
+
+n0_list: a vector containing a list of sample sizes for different treatment group samples. 
+
+alpha_list: a vector containing a list of significance levels. 
+
+
+
+```{r}
+
+```
+
+

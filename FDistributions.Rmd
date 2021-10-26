@@ -1,0 +1,41 @@
+---
+title: "F-Distributions"
+author: "Jingyang(Judy) Zhang"
+date: "10/21/2021"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+```
+
+
+A. F-Distributions with Same NCP but Different dfs
+
+```{r}
+
+df1X <- 10
+df2X <- 20
+
+df1Y <- 20
+df2Y <- 40
+
+n <- 10000
+
+ncp <- 0
+
+X <- data.frame(rf(n, df1X, df2X, ncp))
+colnames(X) <- "x.val"
+
+Y <- data.frame(rf(n, df1Y, df2Y, ncp))
+colnames(Y) <- "y.val"
+
+ggplot(data = X, mapping = aes(x.val)) + 
+  geom_density(color = "red") + 
+  geom_density(data = Y, mapping = aes(y.val), color = "blue") + 
+  geom_vline()
+
+
+```
+
