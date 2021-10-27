@@ -6,6 +6,12 @@ output: html_document
 ---
 
 
+```{r}
+library(tidyverse)
+```
+
+# Intro
+
 In this simulation, we will try different combinations of values of the three parameters ($n_0$: control group sample size; $n_1$: treatment group sample size; $\phi = \frac{\sigma_1^2}{\sigma_0^2}$: ratio of population variances of the treatment group over the control group).
 
 
@@ -16,28 +22,34 @@ $Pr(F > \phi F_{n_1 -1, n_0 -1})$
 where $F = \frac{s_1^2}{s_0^2} = \frac{MSE_1}{MSE_0}$
 
 
+
+# Functions
+
 Function: cal_power() calculates power for a two-sided F-test for equality of two variances. 
 
 Arguments: 
-var1: population variance for the treatment group.
-var0: population variance for the control group. 
-s1: sample variance for the treatment group.
-s0 sample variance for the control group. 
+var1_popl: population variance for the treatment group.
+var0_popl: population variance for the control group. 
+var1: sample variance for the treatment group.
+var0 sample variance for the control group. 
 n1: sample size for the treatment group.
 n0: sample size for the control group. 
-alpha: signifiance level for the F-test of equality of two population variances. 
+alpha: significance level for the F-test of equality of two population variances. 
+
+Return:
+power: calculated power for the F-test for equality of two variances. 
 
 
 ```{r cal_power}
 
-cal_power <- function(var1, var0, s1, s0, n1, n0, alpha){
+cal_power <- function(var1_popl, var0_popl, var1, var0, n1, n0, alpha){
   
 
   
-  F_stat <- s1^2/s0^2
+  F_stat <- var1/var0
   
   
-  phi <- var1^2/var0^2
+  phi <- var1_popl/var0_popl
   
   F_crit_low <- qf(alpha/2, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
   
@@ -75,8 +87,8 @@ $n_0 = n_1 = 30$
 
 ```{r test_cal_power}
 
-var1 <- 180
-var0 <- 175
+var1_popl <- 180
+var0_popl <- 175
 mu1 <- 0
 mu0 <- 0 
 
@@ -85,29 +97,29 @@ n1 <- 30
 n0 <- 30
 
 
-trt_sample <- rnorm(n1, mean = mu1, sd = var1)
-ctrl_sample <- rnorm(n0, mean = mu0, sd = var0)
+trt_sample <- rnorm(n1, mean = mu1, sd = sqrt(var1_popl))
+ctrl_sample <- rnorm(n0, mean = mu0, sd = sqrt(var0_popl))
 
-s1 <- sd(trt_sample)
-s0 <- sd(ctrl_sample)
+var1 <- (sd(trt_sample))^2
+var0 <- (sd(ctrl_sample))^2
 
-cal_power(var1, var0, s1, s0, n1, n0, 0.05)
+cal_power(var1_popl, var0_popl, var1, var0, n1, n0, 0.05)
 
 ```
 
 
 
-Function: simulation()
+Function: simulate_power()
 
 Arguments:
 
-var1_list: a vector containing a list of population variances for different treatment groups. 
+var1popl_list: a vector containing a list of population variances for different treatment groups. 
 
-var0_list: a vector containing a list of population variances for different control groups. 
+var0popl_list: a vector containing a list of population variances for different control groups. 
 
-s1_list: a vector containing a list of sample variances for different treatment group samples. 
+var1_list: a vector containing a list of sample variances for different treatment group samples. 
 
-s0_list: a vector containing a list of sample variances for different control group samples. 
+var0_list: a vector containing a list of sample variances for different control group samples. 
 
 n1_list: a vector containing a list of sample sizes for different treatment group samples. 
 
@@ -116,9 +128,181 @@ n0_list: a vector containing a list of sample sizes for different treatment grou
 alpha_list: a vector containing a list of significance levels. 
 
 
+Return: 
+result_table: a tibble containing parameters and corresponding power of the F test. 
 
-```{r}
+
+
+```{r simulate_power}
+
+simulate_power <- function(var1popl_list, var0popl_list, var1_list, var0_list, n1_list, n0_list, alpha_list){
+  
+  power <- c()
+  
+  for(i in 1:length(var1popl_list)){
+    
+    power[i] <- cal_power(var1popl_list[i], var0popl_list[i], var1_list[i], var0_list[i], n1_list[i], n0_list[i], alpha_list[i])
+    
+  }
+  
+  # Result table will provide three parameters and corresponding power: phi, n1, n0, and power
+  
+  result_table <- tibble(phi = var1popl_list/var0popl_list, n1 = n1_list, n0 = n0_list, power = power)
+  
+  return(result_table)
+  
+  
+}
+
 
 ```
 
+
+
+Test Data:
+
+
+```{r test_simulate_power}
+
+var1popl_list <- c(10, 20)
+var0popl_list <- c(15, 21)
+mu1 <- 0
+mu0 <- 0 
+
+
+n1_list <- c(30, 30)
+n0_list <- c(30, 30)
+
+
+var1_list <- c()
+var0_list <- c()
+
+for(i in 1:length(var1popl_list)){
+  
+  trt <- rnorm(n1_list[i], mean = mu1, sd = sqrt(var1popl_list[i]))
+  var1_list[i] <- (sd(trt))^2
+  ctrl <- rnorm(n0_list[i], mean = mu0, sd = sqrt(var0popl_list[i]))
+  var0_list[i] <- (sd(ctrl))^2
+  
+}
+
+alpha_list <- c(0.05, 0.05)
+
+
+result_table <- simulate_power(var1popl_list, var0popl_list, var1_list, var0_list, n1_list, n0_list, alpha_list)
+
+
+```
+
+
+
+# Simulations
+
+## Same Sample Size with Different Phi
+
+```{r simulate_phi}
+
+
+var1popl_list <- seq(10, 1, by = - 0.01)
+var0popl_list <- rep(10, length(var1popl_list))
+mu1 <- 0
+mu0 <- 0 
+
+
+n1_list <- rep(30, length(var1popl_list))
+n0_list <- rep(30, length(var1popl_list))
+
+
+var1_list <- c()
+var0_list <- c()
+
+for(i in 1:length(var1popl_list)){
+  
+  trt <- rnorm(n1_list[i], mean = mu1, sd = sqrt(var1popl_list[i]))
+  
+  var1_list[i] <- (sd(trt))^2
+  
+  ctrl <- rnorm(n0_list[i], mean = mu0, sd = sqrt(var0popl_list[i]))
+  
+  var0_list[i] <- (sd(ctrl))^2
+  
+}
+
+alpha_list <- rep(0.05, length(var1popl_list))
+
+
+result_table_phi <- simulate_power(var1popl_list, var0popl_list, var1_list, var0_list, n1_list, n0_list, alpha_list)
+
+
+```
+
+
+
+
+
+Plot phi v.s. power
+
+```{r plot_phi}
+
+ggplot(result_table_phi, aes(x = phi, y = power)) + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(0, 1, by = 0.05)) +
+  scale_y_continuous(breaks = seq(0, 1, by = 0.05))
+  theme(axis.text.x = element_text(angle = 295, vjust = 0.5, hjust=1))
+
+```
+
+
+
+## Different Sample Sizes with the Same Phi
+
+```{r simulate_sample_sizes}
+
+
+var1popl_list <- rep(5, 10)
+var0popl_list <- rep(10, 10)
+mu1 <- 0
+mu0 <- 0 
+
+
+n1_list <- seq(10, 100, by = 10)
+n0_list <- rep(100, 10)
+
+
+var1_list <- c()
+var0_list <- c()
+
+for(i in 1:length(var1popl_list)){
+  
+  trt <- rnorm(n1_list[i], mean = mu1, sd = sqrt(var1popl_list[i]))
+  
+  var1_list[i] <- (sd(trt))^2
+  
+  ctrl <- rnorm(n0_list[i], mean = mu0, sd = sqrt(var0popl_list[i]))
+  
+  var0_list[i] <- (sd(ctrl))^2
+  
+}
+
+alpha_list <- rep(0.05, 10)
+
+
+result_table_size <- simulate_power(var1popl_list, var0popl_list, var1_list, var0_list, n1_list, n0_list, alpha_list)
+
+
+```
+
+
+
+Plot sample size v.s. power
+
+```{r plot_phi}
+
+ggplot(result_table_size, aes(x = n1/n0, y = power)) + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(0, 1, by = 0.05)) +
+  scale_y_continuous(breaks = seq(0, 1, by = 0.05))
+  theme(axis.text.x = element_text(angle = 295, vjust = 0.5, hjust=1))
+
+```
 
