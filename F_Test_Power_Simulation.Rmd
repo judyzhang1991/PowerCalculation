@@ -1,18 +1,30 @@
 ---
-title: "F_Test_Power_Simulation"
+title: "F Test Power Simulation"
 author: "Jingyang(Judy) Zhang"
 date: "10/25/2021"
 output: html_document
 ---
 
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
 
-```{r}
+
+
+```{r load_pkg}
 library(tidyverse)
+library(ggpubr)
 ```
 
 # Intro
 
-In this simulation, we will try different combinations of values of the three parameters ($n_0$: control group sample size; $n_1$: treatment group sample size; $\phi = \frac{\sigma_1^2}{\sigma_0^2}$: ratio of population variances of the treatment group over the control group).
+In this simulation, we will try different combinations of values of the three parameters:
+
+$n_0$: control group sample size; 
+
+$n_1$: treatment group sample size;
+
+$\phi = \frac{\sigma_1^2}{\sigma_0^2}$: ratio of population variances of the treatment group over the control group.
 
 
 The power can be calculated by:
@@ -252,21 +264,29 @@ ggplot(result_table_phi, aes(x = phi, y = power)) +
 
 ```
 
+1. As $\phi\rightarrow 1$, power declines.
+
+2. As $\phi\rightarrow 1$, the rate of decline of the power increases and then decreases.
+
+3. As $\phi\rightarrow 1$, the power decreases faster for $\phi\in [0.30, 0.60]$ than for $\phi\in (0, 0.30)\cup(0.6, 1)$.
+
+
 
 
 ## Different Sample Sizes with the Same Phi
 
 ```{r simulate_sample_sizes}
 
+n1_list <- seq(10, 100, by = 1)
+n0_list <- rep(100, length(n1_list))
 
-var1popl_list <- rep(5, 10)
-var0popl_list <- rep(10, 10)
+var1popl_list <- rep(5, length(n1_list))
+var0popl_list <- rep(10, length(n1_list))
 mu1 <- 0
 mu0 <- 0 
 
 
-n1_list <- seq(10, 100, by = 10)
-n0_list <- rep(100, 10)
+
 
 
 var1_list <- c()
@@ -284,7 +304,7 @@ for(i in 1:length(var1popl_list)){
   
 }
 
-alpha_list <- rep(0.05, 10)
+alpha_list <- rep(0.05, length(n1_list))
 
 
 result_table_size <- simulate_power(var1popl_list, var0popl_list, var1_list, var0_list, n1_list, n0_list, alpha_list)
@@ -296,7 +316,7 @@ result_table_size <- simulate_power(var1popl_list, var0popl_list, var1_list, var
 
 Plot sample size v.s. power
 
-```{r plot_phi}
+```{r plot_sample_size}
 
 ggplot(result_table_size, aes(x = n1/n0, y = power)) + 
   geom_point() + 
@@ -306,3 +326,297 @@ ggplot(result_table_size, aes(x = n1/n0, y = power)) +
 
 ```
 
+1. As $\frac{n_1}{n_0}\rightarrow 1$, power increases. 
+
+2. As $\frac{n_1}{n_0}\rightarrow 1$, the rate of increase of power decreases. 
+
+
+
+
+
+## Sample Size, Phi and Power
+
+
+### $\phi = 0.05$
+```{r simulate_samplesize_phi005}
+
+
+n1_list <- seq(10, 200, by = 1)
+n0_list <- n1_list
+
+var1popl_list <- rep(5, length(n1_list))
+var0popl_list <- rep(100, length(n1_list))
+mu1 <- 0
+mu0 <- 0 
+
+
+
+
+
+var1_list <- c()
+var0_list <- c()
+
+for(i in 1:length(var1popl_list)){
+  
+  trt <- rnorm(n1_list[i], mean = mu1, sd = sqrt(var1popl_list[i]))
+  
+  var1_list[i] <- (sd(trt))^2
+  
+  ctrl <- rnorm(n0_list[i], mean = mu0, sd = sqrt(var0popl_list[i]))
+  
+  var0_list[i] <- (sd(ctrl))^2
+  
+}
+
+alpha_list <- rep(0.05, length(n1_list))
+
+
+result_table_phi005 <- simulate_power(var1popl_list, var0popl_list, var1_list, var0_list, n1_list, n0_list, alpha_list)
+
+
+
+```
+
+
+
+
+Plot sample size v.s. power for $\phi = 0.05$
+
+```{r plot_samplesize_phi005}
+
+phi005 <- ggplot(result_table_phi005, aes(x = n1, y = power)) + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(5, 210, by = 10)) +
+  scale_y_continuous(breaks = seq(0, 1, by = 0.05))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  
+phi005
+
+```
+
+1. As $n_1 = n_0 = n\rightarrow 1$, power increases. 
+
+2. As $n_1 = n_0 = n\rightarrow 1$, the rate of increase of power decreases. 
+
+
+
+
+
+### $\phi = 0.1$
+```{r simulate_samplesize_phi01}
+
+
+n1_list <- seq(10, 200, by = 1)
+n0_list <- n1_list
+
+var1popl_list <- rep(1, length(n1_list))
+var0popl_list <- rep(10, length(n1_list))
+mu1 <- 0
+mu0 <- 0 
+
+
+
+
+
+var1_list <- c()
+var0_list <- c()
+
+for(i in 1:length(var1popl_list)){
+  
+  trt <- rnorm(n1_list[i], mean = mu1, sd = sqrt(var1popl_list[i]))
+  
+  var1_list[i] <- (sd(trt))^2
+  
+  ctrl <- rnorm(n0_list[i], mean = mu0, sd = sqrt(var0popl_list[i]))
+  
+  var0_list[i] <- (sd(ctrl))^2
+  
+}
+
+alpha_list <- rep(0.05, length(n1_list))
+
+
+result_table_phi01 <- simulate_power(var1popl_list, var0popl_list, var1_list, var0_list, n1_list, n0_list, alpha_list)
+
+
+
+```
+
+
+
+
+Plot sample size v.s. power for $\phi = 0.1$
+
+```{r plot_samplesize_phi01}
+
+phi01 <- ggplot(result_table_phi01, aes(x = n1, y = power)) + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(5, 210, by = 10)) +
+  scale_y_continuous(breaks = seq(0, 1, by = 0.05))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  
+phi01
+
+```
+
+1. As $n_1 = n_0 = n\rightarrow 1$, power increases. 
+
+2. As $n_1 = n_0 = n\rightarrow 1$, the rate of increase of power decreases. 
+
+
+
+
+### $\phi = 0.3$
+```{r simulate_samplesize_phi03}
+
+
+n1_list <- seq(10, 200, by = 1)
+n0_list <- n1_list
+
+var1popl_list <- rep(3, length(n1_list))
+var0popl_list <- rep(10, length(n1_list))
+mu1 <- 0
+mu0 <- 0 
+
+
+
+
+
+var1_list <- c()
+var0_list <- c()
+
+for(i in 1:length(var1popl_list)){
+  
+  trt <- rnorm(n1_list[i], mean = mu1, sd = sqrt(var1popl_list[i]))
+  
+  var1_list[i] <- (sd(trt))^2
+  
+  ctrl <- rnorm(n0_list[i], mean = mu0, sd = sqrt(var0popl_list[i]))
+  
+  var0_list[i] <- (sd(ctrl))^2
+  
+}
+
+alpha_list <- rep(0.05, length(n1_list))
+
+
+result_table_phi03 <- simulate_power(var1popl_list, var0popl_list, var1_list, var0_list, n1_list, n0_list, alpha_list)
+
+
+
+```
+
+
+
+
+Plot sample size v.s. power for $\phi = 0.3$
+
+```{r plot_samplesize_phi03}
+
+phi03 <- ggplot(result_table_phi03, aes(x = n1, y = power)) + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(5, 210, by = 10)) +
+  scale_y_continuous(breaks = seq(0, 1, by = 0.05))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  
+phi03
+
+```
+
+1. As $n_1 = n_0 = n\rightarrow 1$, power increases. 
+
+2. As $n_1 = n_0 = n\rightarrow 1$, the rate of increase of power decreases. 
+
+
+
+### $\phi = 0.5$
+```{r simulate_samplesize_phi05}
+
+
+n1_list <- seq(10, 200, by = 1)
+n0_list <- n1_list
+
+var1popl_list <- rep(5, length(n1_list))
+var0popl_list <- rep(10, length(n1_list))
+mu1 <- 0
+mu0 <- 0 
+
+
+
+
+
+var1_list <- c()
+var0_list <- c()
+
+for(i in 1:length(var1popl_list)){
+  
+  trt <- rnorm(n1_list[i], mean = mu1, sd = sqrt(var1popl_list[i]))
+  
+  var1_list[i] <- (sd(trt))^2
+  
+  ctrl <- rnorm(n0_list[i], mean = mu0, sd = sqrt(var0popl_list[i]))
+  
+  var0_list[i] <- (sd(ctrl))^2
+  
+}
+
+alpha_list <- rep(0.05, length(n1_list))
+
+
+result_table_phi05 <- simulate_power(var1popl_list, var0popl_list, var1_list, var0_list, n1_list, n0_list, alpha_list)
+
+
+
+```
+
+
+
+
+Plot sample size v.s. power for $\phi = 0.5$
+
+```{r plot_samplesize_phi05}
+
+phi05 <- ggplot(result_table_phi05, aes(x = n1, y = power)) + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(5, 210, by = 10)) +
+  scale_y_continuous(breaks = seq(0, 1, by = 0.05))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  
+phi05
+
+```
+
+1. As $n_1 = n_0 = n\rightarrow 1$, power increases. 
+
+2. As $n_1 = n_0 = n\rightarrow 1$, the rate of increase of power decreases. 
+
+
+
+
+Compare
+
+```{r plots_samplesize_phi}
+
+ggarrange(phi005, phi01, phi03, phi05,
+          labels = c("phi = 0.05", "phi = 0.1", "phi = 0.3", "phi = 0.5"),
+          label.x = 0.5,
+          label.y = 0.5,
+          font.label = list(size = 12),
+          ncol = 2, nrow = 2)
+
+
+
+
+```
+
+
+
+1. As $\phi$ increases from $0.05$ to $0.5$, the rate of change in power for small values of sample size n decreases. 
+That is, for smaller $\phi$, there will be a large increase in power when increasing a small sample size n. However, for larger $\phi$, there will not be an increase in power as large as the one for smaller $\phi$ when increasing a small sample size n. 
+
+2. On the other hand, as $\phi$ increases from $0.05$ to $0.5$, it requires larger sample size n for power to reach an "asymptote" (i.e. a point at which there is little increase in power when increasing sample size n). 
+That is, for smaller $\phi$, smaller sample size n is needed for the power to reach an "asymptote" compared to the sample size n needed for larger $\phi$. 
+
+3. The graph actually reminds me of a variogram in spatial statistics. 
+
+![Variogram](Variogram.PNG)
