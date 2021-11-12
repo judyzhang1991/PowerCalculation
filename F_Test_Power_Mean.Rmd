@@ -1,0 +1,397 @@
+---
+title: "F Test Power Simulation - Mean"
+author: "Jingyang(Judy) Zhang"
+date: "10/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+
+
+```{r load_pkg}
+library(tidyverse)
+library(ggpubr)
+```
+
+# Introduction
+
+## Setup
+
+Treatment Group Sample Observations: $Y_{1j}\stackrel{iid}\sim N(\mu_{1}, \sigma_{1}^{2})$, $j = 1, ..., n_{1}$.
+
+Control Group Sample Observations: $Y_{0j}\stackrel{iid}\sim N(\mu_{0}, \sigma_{0}^{2})$, $j = 1, ..., n_{0}$.
+
+Total Number of Groups: $k = 2$
+
+Total Number of Observations: $N = \sum_{i=1}^{k}n_{i}$
+
+
+Sample Means: 
+
+$\bar{Y}_{i.} = \frac{1}{n_{i}}\sum_{j=1}^{n_{i}}Y_{ij}$: sample mean for group $i$. 
+
+$\bar{Y}_{..} = \frac{1}{N}\sum_{i=1}^{k}\sum_{j=1}^{n_{i}}Y_{ij}$: sample grand mean for all observations in k samples. 
+
+**Assumptions:**
+
+1. Two populations (i.e. treatment group and control group) are independent.
+
+2. Assume equal sample size: $n_{0} = n_{1} = n$.
+
+3. Assume equal population variance: $\sigma_{1}^{2} = \sigma_{0}^{2} = \sigma^{2}$.
+
+
+## F-Test for Equality of Population Means 
+
+**Hypothesis:**
+
+$H_0: \mu_{0} = \mu_{1}$
+
+$H_{a}: \mu_{0}\neq\mu_{1}$
+
+**Test Statistic:**
+
+$F = \frac{MST}{MSE} = \frac{SST/(k-1)}{SSE/(N-k)}$$\stackrel{H_0}\sim F_{(k-1),(N-k)}$
+
+where $k=2$ is number of groups (i.e. here we have two group, treatment and control);
+
+$SST = \sum_{i=1}^{k}n_{i}(\bar{Y}_{i.} - \bar{Y}_{..})^{2} = \sum_{i=1}^{2}n(\bar{Y}_{i.} - \bar{Y}_{..})^{2}$ is total sum of squares between groups;
+
+$k-1 = 2-1 = 1$ is degrees of freedom for SST;
+
+$SSE = \sum_{i=1}^{k}\sum_{j=1}^{n_{i}}(Y_{ij} - \bar{Y}_{i.})^{2}$ is total sum of squares within groups.  
+
+$N-k = 2n - 2$ is degrees of freedom for SSE.
+
+**Effect Size:**
+
+As we are assuming two populations have the same variance, the population standardized mean difference will be given by:
+
+
+$\delta = \frac{\mu_{1} - \mu_{0}}{\sigma}
+
+
+**Decision Rule:**
+
+For a given significance level $\alpha$, we reject $H_{0}$ if:
+
+$F > F_{(k-1),(N-k)}(\alpha)$
+
+**Power:**
+
+For a given significance level $\alpha$, the power of the F-test is given by:
+
+$\text{Power} = P(\text{Reject H_{0}}|\text{H_{a} is true})$
+
+Under $H_{a}$, $F = \frac{MST}{MSE}$ follows a non-central $F_{(k-1),(N-k)}$ with a non-centrality parameter given by:
+
+$\delta = \sum_{i=1}^{k}\frac{n_{i}(\mu_{i} - \mu)^{2}}{\sigma^{2}} = \sum_{i=1}^{k}\frac{n(\mu_{i} - \mu)^{2}}{\sigma^{2}} = \sum_{i=1}^{k}\frac{(\mu_{i}-\mu)^{2}}{(\frac{\sigma}{\sqrt{n}})^2}$ where
+
+$\mu_{i}$ is population mean for group $i$ and $\mu = \frac{1}{N}\sum_{i=1}^{k}n_{i}\mu_{i}$ is the population grand mean. 
+
+
+# Purpose 
+
+In this simulation, we calculate power of F-Test for equality of population means with different combinations of values of the four parameters:
+
+$n_{0} = n_{1} = n$: sample size of control/treatment group. 
+
+$\mu_{0}$: population mean of control group. 
+
+$\mu_{1}$: population mean of treatment group. 
+
+$\sigma^{2}$: population variance of control/treatment group.
+
+
+
+
+# Functions
+
+**Function cal_power_mean():** calculates power for a two-sided F-test for equality of two population means. 
+
+Arguments: 
+mean1_popl: population mean for the treatment group.
+mean0_popl: population mean for the control group. 
+var_popl: population variance for the control/treatment group (as we assume the two populations have the same variance).
+sst: sum of squares between groups.
+sse: sum of squares within groups. 
+n: sample size for the control/treatment group (as we assume the two samples have the same size).
+alpha: significance level for the F-test of equality of two population means. 
+
+Return:
+power: calculated power for the F-test for equality of two population means. 
+
+
+```{r cal_power_mean}
+
+cal_power_mean <- function(mean1_popl, mean0_popl, var_popl, sst, sse, n, alpha){
+  
+  F <- (sst/(2 - 1))/(sse/(2*n - 2))
+  
+  mu <- (1/(2*n))*(n*mean1_popl + n*mean0_popl)
+  
+  delta <- n*(mean1_popl - mu)^2/var_popl + n*(mean0_popl - mu)^2/var_popl
+  
+  
+  F_crit_up <- qf(1 - alpha, 2-1, 2*n-2, lower.tail = TRUE, log.p = FALSE)
+  
+  power <- pf(F_crit_up, 2-1, 2*n-2, ncp = delta, lower.tail = FALSE, log.p = FALSE)
+  
+  return(power)
+  
+  
+}
+
+
+```
+
+
+**Test cal_power_mean() Function:**
+
+We will be randomly drawing a sample of size $n_{0} = n$ from the control group population and a sample of size $n_{1} = n$ from the treatment group population. 
+
+
+
+Test Data:
+$Y_{0j}\sim N(0, 1)$ 
+
+$Y_{1j}\sim N(10, 1)$  
+
+$n_0 = n_1 = 30$
+
+$\alpha = 0.05$
+
+```{r test_cal_power_mean}
+
+
+mean1_popl <- 0.1
+
+mean0_popl <- 0
+
+var_popl <- 1
+
+n <- 15
+
+alpha <- 0.5
+
+
+
+trt_sample <- rnorm(n, mean = mean1_popl, sd = sqrt(var_popl))
+trt_label <- rep(1, n)
+
+ctrl_sample <- rnorm(n, mean = mean0_popl, sd = sqrt(var_popl))
+ctrl_label <- rep(0, n)
+
+obsv <- c(trt_sample, ctrl_sample)
+
+group <- c(trt_label, ctrl_label)
+
+dat <- tibble(obsv, group)
+
+model <- lm(obsv ~ as.factor(group), data = dat)
+
+sst <- sum((fitted(model) - mean(dat$obsv))^{2})
+
+sse <- sum((fitted(model) - dat$obsv)^2)
+
+
+
+cal_power_mean(mean1_popl, mean0_popl, var_popl, sst, sse, n, alpha)
+
+```
+
+
+
+**Function simulate_power_mean():** calculate powers for different values of parameters.
+
+Arguments:
+
+mean1popl_list: a vector containing a list of population means for different treatment groups. 
+
+mean0popl_list: a vector containing a list of population means for different control groups. 
+
+varpopl_list: a vector containing a list of sample variances for different treatment group samples. 
+
+sst_list: a vector containing a list of SSTs calculated for each pair of treatment v.s. control groups.
+
+sse_list: a vector containing a list of SSEs calculated for each pair of treatment v.s. control groups.
+
+n_list: a vector containing a list of sample sizes for different treatment/control group samples. 
+
+
+alpha_list: a vector containing a list of significance levels. 
+
+
+Return: 
+result_table: a tibble containing parameters and corresponding power of the F test. 
+
+
+
+```{r simulate_power_mean}
+
+simulate_power_mean <- function(mean1popl_list, mean0popl_list, varpopl_list, sst_list, sse_list, n_list, alpha_list){
+  
+  power <- c()
+  
+  for(i in 1:length(mean1popl_list)){
+    
+    power[i] <- cal_power_mean(mean1popl_list[i], mean0popl_list[i], varpopl_list[i], sst_list[i], sse_list[i], n_list[i], alpha_list[i])
+    
+  }
+  
+  # Result table will provide four parameters and corresponding power: mu1 (population mean for the treatment group), mu0 (population mean for the control group), n (sample size for control/treatment group), sigma2 (population variance for control/treatment group) and power
+  
+  result_table <- tibble(mu1 = mean1popl_list, mu0 = mean0popl_list, sigma2 = varpopl_list, n = n_list, power = power)
+  
+  return(result_table)
+  
+  
+}
+
+
+```
+
+
+
+**Test simulate_power_mean() Function:**
+
+We will be randomly drawing N samples of different sizes $n_{0} = n_{1} = n$ from the control group population and the treatment group population. 
+
+Test Data:
+
+
+```{r test_simulate_power_mean}
+
+mean1popl_list <- c(1, -0.1, 0.1)
+
+mean0popl_list <- c(0, 0, 0)
+
+varpopl_list <- c(1, 1, 1)
+
+n_list <- c(30, 30, 15)
+
+alpha_list <- c(0.05, 0.05, 0.05)
+
+
+
+sst_list <- c()
+sse_list <- c()
+
+
+
+
+for(i in 1:length(mean1popl_list)){
+  
+  
+  trt_sample <- rnorm(n_list[i], mean = mean1popl_list[i], sd = sqrt(varpopl_list[i]))
+  trt_label <- rep(1, n_list[i])
+
+  ctrl_sample <- rnorm(n_list[i], mean = mean0popl_list[i], sd = sqrt(varpopl_list[i]))
+  ctrl_label <- rep(0, n_list[i])
+
+  obsv <- c(trt_sample, ctrl_sample)
+
+  group <- c(trt_label, ctrl_label)
+
+  dat <- tibble(obsv, group)
+
+  model <- lm(obsv ~ as.factor(group), data = dat)
+
+  sst_list[i] <- sum((fitted(model) - mean(dat$obsv))^{2})
+
+  sse_list[i] <- sum((fitted(model) - dat$obsv)^2)
+  
+}
+
+
+
+result_table_mean <- simulate_power_mean(mean1popl_list, mean0popl_list, varpopl_list, sst_list, sse_list, n_list, alpha_list)
+
+result_table_mean
+
+
+```
+
+
+
+
+
+
+# Exploration
+
+## Sample Size v.s. Power (for given population means, $\mu_1$, $\mu_0$, and population variance, $\sigma^2$)
+
+
+Test Data:
+
+Control Group: $Y_{0j}\stackrel{iid}\sim N(0, 1)$
+Treatment Group: $Y_{1j}\stackrel{iid}\sim N(0.5, 1)$
+Significance Level: $\alpha = 0.05$
+Sample Size: $n_0 = n_1 = n = 5, 60, 115, 170, 225, 280, 335, 490, 445, 500$
+
+
+```{r explore_sample_size}
+
+
+mean1popl_list <- rep(0.5, 10)
+
+mean0popl_list <- rep(0, 10)
+
+varpopl_list <- rep(1, 10)
+
+alpha_list <- rep(0.05, 10)
+
+n_list <- seq(5, 500, length.out = 10)
+
+
+sst_list <- c()
+sse_list <- c()
+
+
+for(i in 1:length(mean1popl_list)){
+  
+  
+  trt_sample <- rnorm(n_list[i], mean = mean1popl_list[i], sd = sqrt(varpopl_list[i]))
+  trt_label <- rep(1, n_list[i])
+
+  ctrl_sample <- rnorm(n_list[i], mean = mean0popl_list[i], sd = sqrt(varpopl_list[i]))
+  ctrl_label <- rep(0, n_list[i])
+
+  obsv <- c(trt_sample, ctrl_sample)
+
+  group <- c(trt_label, ctrl_label)
+
+  dat <- tibble(obsv, group)
+
+  model <- lm(obsv ~ as.factor(group), data = dat)
+  
+  
+
+  sst_list[i] <- sum((fitted(model) - mean(dat$obsv))^{2})
+
+  sse_list[i] <- sum((fitted(model) - dat$obsv)^2)
+
+  
+}
+
+
+
+result_table_mean <- simulate_power_mean(mean1popl_list, mean0popl_list, varpopl_list, sst_list, sse_list, n_list, alpha_list)
+
+result_table_mean
+
+
+ggplot(data = result_table_mean, aes(x = n, y = power)) + 
+  geom_point() +  
+  scale_x_continuous(limits = c(5, 500)) + 
+  scale_y_continuous(limits = c(0, 1)) + 
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "red")
+  
+
+
+
+```
+

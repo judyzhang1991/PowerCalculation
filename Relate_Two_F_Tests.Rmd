@@ -1,0 +1,195 @@
+---
+title: "Relate_Two_F_Tests"
+author: "Jingyang(Judy) Zhang"
+date: "11/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Load Packages and External R Scripts
+```{r load_pkg_source}
+source("F_Test_Power_Mean_Functions.R")
+source("F_Test_Power_Variance_Functions.R")
+library(pwr)
+library(tidyverse)
+```
+
+
+
+# Introduction
+
+## Setup
+
+Treatment Group Sample Observations: $Y_{1j}\stackrel{iid}\sim N(\mu_{1}, \sigma_{1}^{2})$, $j = 1, ..., n_{1}$.
+
+Control Group Sample Observations: $Y_{0j}\stackrel{iid}\sim N(\mu_{0}, \sigma_{0}^{2})$, $j = 1, ..., n_{0}$.
+
+Total Number of Groups: $k = 2$
+
+Total Number of Observations: $N = \sum_{i=1}^{k}n_{i} = 2n$
+
+
+Effect Size:
+
+We will use standardized mean difference ($\delta$) as the effect size:
+
+$\delta = \frac{\mu_{1} - \mu_{0}}{\sigma}$
+
+**Assumptions:**
+
+1. Two populations (i.e. treatment group and control group) are independent.
+
+2. Assume equal sample size: $n_{0} = n_{1} = n$.
+
+
+
+# Calculate Sample Sizes
+
+**We are going to calculate sample sizes required for a F-Test for equality of population means (which is equivalent to a two sample t-test for equality of population means when there are only two independent groups) to obtain a power of 80%, given $\alpha = 0.5$ and a set of different effect sizes (standardized mean differences: $\delta = \frac{\mu_{1} - \mu_{0}}{\sigma}).**
+
+**Assumption:**
+
+1. Assume equal population variances $\sigma^{2}_{0} = \sigma^{2}_{1} = \sigma^{2}$.
+
+2. Assume we are conducting a two-sided F-test/t-Test for equality of population means. 
+
+$H_{0}: \mu_{0} = \mu_{1}$
+
+$H_{a}: \mu_{0}\neq \mu_{1}$
+
+
+**Test Data:**
+
+
+$\sigma^{2} = 1$
+
+$\mu_{0} = 0, 0, 0, 0, 0$
+
+$\mu_{1} = 0.1, 0.2, 0.3, 0.4, 0.5$
+
+The above setup will result in effect sizes $\delta = \frac{\mu_{1} - \mu_{0}}{\sigma} = 0.1, 0.2, 0.3, 0.4, 0.5$
+
+$\alpha = 0.05$
+
+$\text{Power} = 0.8$
+
+```{r cal_sample_size_mean}
+
+ds <- seq(0.1, 0.5, by = 0.1)
+
+ns_mean <- c()
+
+for(i in 1:length(ds)){
+  
+  n_mean <- round(as.numeric(pwr.t.test(d=ds[i], sig.level=0.05, power=0.80, type="two.sample", alternative="two.sided")$n))
+  
+  ns_mean[i] <- n_mean
+
+}
+
+
+
+
+```
+
+
+
+
+
+
+# Calculate Power
+
+**We are going to calculate power of a F-Test for equality of population variances, given $\alpha = 0.05$, a set of different population variances ratios $\phi = \frac{\sigma^{2}_{1}}{\sigma^{2}_{0}}$, and a set of different effect sizes (standardized mean differences: $\delta = \frac{\mu_{1} - \mu_{0}}{\sigma}).**
+
+
+
+**Assumption:**
+
+1. Note: we no longer assume equal population means. 
+
+2. Assume we are conducting a two-sided F-test/t-Test for equality of population variances
+
+$H_{0}: \frac{\sigma^{2}_{1}}{\sigma^{2}_{0}} = 1\Rightarrow \sigma^{2}_{0} = \sigma^{2}_{1}$
+
+$H_{a}: \frac{\sigma^{2}_{1}}{\sigma^{2}_{0}} \neq 1\Rightarrow \sigma^{2}_{0} \neq \sigma^{2}_{1}$
+
+
+**Test Data:**
+
+
+$\sigma^{2}_{0} = 1, 1, 1, 1, 1$
+
+$\sigma^{2}_{1} = 1.1, 1.2, 1.3, 1.4, 1.5, $
+
+$\mu_{0} = 0, 0, 0, 0, 0$
+
+$\mu_{1} = 0.1, 0.2, 0.3, 0.4, 0.5$
+
+The above setup will result in effect sizes $\delta = \frac{\mu_{1} - \mu_{0}}{\sigma} = 0.1, 0.2, 0.3, 0.4, 0.5$
+
+The above setup will result in population variance ratios $\phi = \frac{\sigma^{2}_{1}}{\sigma^{2}_{0}}} = 1.1, 1.2, 1.3, 1.4, 1.5$
+
+$\alpha = 0.05$
+
+We will look at power of the F-Test for equality of population variances using sample sizes (per group) calculated above:
+
+$n_{0} = n_{1} = n = 1571, 393, 175, 99, 64$
+
+
+
+## Power for $\phi = 1.1$, $\delta = 0.1$
+
+```{r cal_power_variance}
+
+
+sigma_sqr1s <- rep(1.1, length(ns_mean))
+sigma_sqr0s <- rep(1, length(ns_mean))
+
+mu1 <- 0.1
+mu0 <- 0 
+
+alphas <- rep(0.05, length(ns_mean))
+
+
+
+s_sqr1s <- c()
+s_sqr0s <- c()
+
+
+
+
+
+for(i in 1:length(ns_mean)){
+  
+  trt <- rnorm(ns_mean[i], mean = mu1, sd = sqrt(sigma_sqr1s[i]))
+  
+  s_sqr1s[i] <- (sd(trt))^2
+  
+  ctrl <- rnorm(ns_mean[i], mean = mu0, sd = sqrt(sigma_sqr0s[i]))
+  
+  s_sqr0s[i] <- (sd(ctrl))^2
+  
+}
+
+
+
+
+result_table <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, ns_mean, ns_mean, alphas)
+
+result_table %>% add_column(delta = rep(0.1, 5), .before = "phi")
+
+
+
+
+
+
+
+
+
+
+
+```
