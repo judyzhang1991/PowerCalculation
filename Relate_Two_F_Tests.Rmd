@@ -190,7 +190,7 @@ for(i in 1:length(sigma_sqr1s)){
 
 result_table_1 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[1], length(sigma_sqr1s)), rep(ns_mean[1], length(sigma_sqr1s)), alphas)
 
-result_table_1 %>% add_column(delta = rep(0.1, length(sigma_sqr1s)), .before = "phi")
+result_table_1 <- result_table_1 %>% add_column(delta = rep(0.1, length(sigma_sqr1s)), .before = "phi")
 
 
 
@@ -242,7 +242,7 @@ for(i in 1:length(sigma_sqr1s)){
 
 result_table_2 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[2], length(sigma_sqr1s)), rep(ns_mean[2], length(sigma_sqr1s)), alphas)
 
-result_table_2 %>% add_column(delta = rep(0.2, length(sigma_sqr1s)), .before = "phi")
+result_table_2 <- result_table_2 %>% add_column(delta = rep(0.2, length(sigma_sqr1s)), .before = "phi")
 
 
 
@@ -295,7 +295,7 @@ for(i in 1:length(sigma_sqr1s)){
 
 result_table_3 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[3], length(sigma_sqr1s)), rep(ns_mean[3], length(sigma_sqr1s)), alphas)
 
-result_table_3 %>% add_column(delta = rep(0.3, length(sigma_sqr1s)), .before = "phi")
+result_table_3 <- result_table_3 %>% add_column(delta = rep(0.3, length(sigma_sqr1s)), .before = "phi")
 
 
 
@@ -348,7 +348,7 @@ for(i in 1:length(sigma_sqr1s)){
 
 result_table_4 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[4], length(sigma_sqr1s)), rep(ns_mean[4], length(sigma_sqr1s)), alphas)
 
-result_table_4 %>% add_column(delta = rep(0.4, length(sigma_sqr1s)), .before = "phi")
+result_table_4 <- result_table_4 %>% add_column(delta = rep(0.4, length(sigma_sqr1s)), .before = "phi")
 
 
 
@@ -402,7 +402,7 @@ for(i in 1:length(sigma_sqr1s)){
 
 result_table_5 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[5], length(sigma_sqr1s)), rep(ns_mean[5], length(sigma_sqr1s)), alphas)
 
-result_table_5 %>% add_column(delta = rep(0.5, length(sigma_sqr1s)), .before = "phi")
+result_table_5 <- result_table_5 %>% add_column(delta = rep(0.5, length(sigma_sqr1s)), .before = "phi")
 
 
 
@@ -417,9 +417,46 @@ result_table_5 %>% add_column(delta = rep(0.5, length(sigma_sqr1s)), .before = "
 ```{r combine_all_tibbles}
 
 
-result_table <- bind_row(result_table_1, result_table_2)
+result_table <- bind_rows(list(result_table_1, result_table_2, result_table_3,
+                               result_table_4, result_table_5))
 
-result_table
+
+
+# result_table
+
+
+```
+
+
+
+# Visualization
+
+## Data Wrangling
+
+**Because the power for F test for equality of population variances remains the same for population variance ratio $\phi$ and its inverse $\frac{1}{\phi}$, we will drop duplicated rows. 
+
+```{r}
+
+result_table_unique <- result_table %>% 
+  slice(-seq(2, 50, by = 2)) %>%
+  mutate(phi = recode(phi, '1.1' = '1.1 or 1/1.1',
+                            '1.2' = '1.2 or 1/1.2',
+                            '1.3' = '1.3 or 1/1.3',
+                            '1.4' = '1.4 or 1/1.4',
+                            '1.5' = '1.5 or 1/1.5'))
+
+
+#result_table_unique
+          
+```
+
+
+```{r}
+
+
+
+ggplot(data = result_table_unique, mapping = aes(x = n, y = power, group = as.factor(phi), color = as.factor(phi))) + 
+  geom_smooth()
 
 ```
 
