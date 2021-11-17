@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 # Load Packages and External R Scripts
-```{r load_pkg_source}
+```{r load_pkg_source, message = FALSE}
 source("F_Test_Power_Mean_Functions.R")
 source("F_Test_Power_Variance_Functions.R")
 library(pwr)
@@ -85,7 +85,7 @@ ns_mean <- c()
 
 p <- 0.8
 
-for(i in 1:length(ds)){
+for(i in 1:length(deltas)){
   
   n_mean <- round(as.numeric(pwr.t.test(d=deltas[i], sig.level=0.05, power=p, type="two.sample", alternative="two.sided")$n))
   
@@ -98,7 +98,7 @@ meanTest_power80_sampleSizes <- tibble(Power = rep(p, length(ns_mean)), Effect_S
 
 
 
-meanTest_power80_sampleSizes
+#meanTest_power80_sampleSizes
 
 ```
 
@@ -192,7 +192,7 @@ result_table_1 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s,
 
 result_table_1 <- result_table_1 %>% add_column(delta = rep(0.1, length(sigma_sqr1s)), .before = "phi")
 
-
+#result_table_1
 
 
 ```
@@ -244,7 +244,7 @@ result_table_2 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s,
 
 result_table_2 <- result_table_2 %>% add_column(delta = rep(0.2, length(sigma_sqr1s)), .before = "phi")
 
-
+#result_table_2
 
 
 ```
@@ -298,7 +298,7 @@ result_table_3 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s,
 result_table_3 <- result_table_3 %>% add_column(delta = rep(0.3, length(sigma_sqr1s)), .before = "phi")
 
 
-
+#result_table_3
 
 ```
 
@@ -351,7 +351,7 @@ result_table_4 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s,
 result_table_4 <- result_table_4 %>% add_column(delta = rep(0.4, length(sigma_sqr1s)), .before = "phi")
 
 
-
+#result_table_4 
 
 ```
 
@@ -405,6 +405,8 @@ result_table_5 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s,
 result_table_5 <- result_table_5 %>% add_column(delta = rep(0.5, length(sigma_sqr1s)), .before = "phi")
 
 
+#result_table_5
+
 
 
 ```
@@ -451,12 +453,48 @@ result_table_unique <- result_table %>%
 ```
 
 
+
+
 ```{r}
 
 
 
-ggplot(data = result_table_unique, mapping = aes(x = n, y = power, group = as.factor(phi), color = as.factor(phi))) + 
-  geom_smooth()
+ggplot(data = result_table_unique, mapping = aes(x = n, y = power, group = phi, color = phi)) + 
+  geom_point() +
+  geom_line(size = 0.5) +
+  geom_hline(yintercept = 0.8, size = 1, linetype = "dashed") +
+  scale_x_continuous(name = "Sample Size (per group)", breaks = seq(0, 1600, 100)) +
+  scale_y_continuous(name = "Power", breaks = sort(c(seq(0, 1, 0.15), 0.8))) +
+  scale_color_manual(name = "Population Variances Ratio", values=c("#B7950B", "#0BB795", "#B387C2", "#FFC300", "#F03A5E")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ```
+
+
+
+**Observations**
+
+1. Power is symmetric for population variances ratio $\phi$: power for $\phi = 1.1$ is the same as the power for $\phi = \frac{1}{1.1}$.
+
+
+2. For any given population variance ratio $phi$: as sample size increases the power increases but at a decreasing rate. 
+
+3. For any given sample size: the further away the population variance ratio $\phi$ is away from 1 (either less than 1 or greater than 1), the larger the power. 
+
+4. For any given sample size: the further away the population variance ratio $\phi$ is away from 1 (either less than 1 or greater than 1),the larger the rate of change of the power. 
+
+
+
+**Implications**
+
+1. For population variance ratio that is further away from 1 (i.e. meaning the two population variances are very different), increase sample size will efficiently increase power (that is, a small change in sample size will result in a big increase in power).
+
+2. For most minimum required sample sizes calculated from F tests for equality of population means with at least a power of 80%, the power for F tests for equality of population variances will not reach 80% except for the following two cases:
+
+a. The population variance ratio is already very further away from 1 (as in the case of $\phi = 1.5 \text{ or } 1/1.5$ and $\phi = 1.4 \text{ or } 1/1.4$) with moderately large sample sizes (as in the case of about 250 samples per group for $\phi = 1.5 \text{ or } 1/1.5$ and about 350 samples per group for $\phi = 1.4 \text{ or } 1/1.4$). 
+
+b. The population variance ratio is NOT very close to 1 (as in the case of $\phi = 1.3 \text{ or } 1/1.3$, $\phi = 1.2 \text{ or } 1/1.2$) with very large sample sizes (as in the case of about 670 samples per group for $\phi = 1.3 \text{ or } 1/1.3$ and about 1225 samples per group for $\phi = 1.2 \text{ or } 1/1.2$).
+
+
+
 
