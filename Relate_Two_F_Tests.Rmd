@@ -75,33 +75,54 @@ The above setup will result in effect sizes $\delta = \frac{\mu_{1} - \mu_{0}}{\
 
 $\alpha = 0.05$
 
-$\text{Power} = 0.8$
+$\text{Power} = 0.5, 0.6, 0.7, 0.8$
 
 ```{r cal_sample_size_mean}
 
 deltas <- seq(0.1, 0.5, by = 0.1)
 
-p <- 0.8
+powers <- c(0.5, 0.6, 0.7, 0.8)
 
 alpha <- 0.05
 
-ns_mean <- c()
+ns_mean <- list()
 
-for(i in 1:length(deltas)){
+for(i in 1:length(powers)){
   
-  #n_mean <- round(as.numeric(pwr.t.test(d=deltas[i], sig.level=0.05, power=p, type="two.sample", alternative="two.sided")$n))
-  n_mean <- cal_sampleSize_mean(deltas[i], p, alpha)
+  ns <- c()
   
-  ns_mean[i] <- n_mean
+  for(j in 1:length(deltas)){
+  
+    
+    
+    n_mean <- cal_sampleSize_mean(deltas[j], powers[i], alpha)
+    
+    ns[j] <- n_mean
+    
 
+  }
+  
+  ns_mean[[i]] <- ns
+  
 }
 
-meanTest_power80_sampleSizes <- tibble(Power = rep(p, length(ns_mean)), Effect_Size = deltas, Sample_Size_per_Group = ns_mean)
+powers_result <- list()
+
+for(i in 1:length(powers)){
+  
+  powers_level <- rep(powers[i], length(deltas))
+  powers_result[[i]] <- powers_level
+}
+
+powers_result <- unlist(powers_result)
+
+
+meanTest_power50_80_sampleSizes <- tibble(Power = powers_result, Effect_Size = rep(deltas, length(powers)), Sample_Size_per_Group = unlist(ns_mean))
 
 
 
 
-meanTest_power80_sampleSizes
+meanTest_power50_80_sampleSizes
 
 ```
 
