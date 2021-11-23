@@ -81,13 +81,16 @@ $\text{Power} = 0.8$
 
 deltas <- seq(0.1, 0.5, by = 0.1)
 
-ns_mean <- c()
-
 p <- 0.8
+
+alpha <- 0.05
+
+ns_mean <- c()
 
 for(i in 1:length(deltas)){
   
-  n_mean <- round(as.numeric(pwr.t.test(d=deltas[i], sig.level=0.05, power=p, type="two.sample", alternative="two.sided")$n))
+  #n_mean <- round(as.numeric(pwr.t.test(d=deltas[i], sig.level=0.05, power=p, type="two.sample", alternative="two.sided")$n))
+  n_mean <- cal_sampleSize_mean(deltas[i], p, alpha)
   
   ns_mean[i] <- n_mean
 
@@ -98,7 +101,7 @@ meanTest_power80_sampleSizes <- tibble(Power = rep(p, length(ns_mean)), Effect_S
 
 
 
-#meanTest_power80_sampleSizes
+meanTest_power80_sampleSizes
 
 ```
 
@@ -431,7 +434,44 @@ result_table <- bind_rows(list(result_table_1, result_table_2, result_table_3,
 
 
 
-# Visualization
+
+# Calculate Population Variance Ratio ($\phi$)
+
+
+**We are going to calculate population variance ratio $\phi$ using sample sizes that would result in a power of $80\%$ for the F test for equality of population means with effect sizes (standardized mean differences: $\delta = \frac{\mu_{1} - \mu_{0}}{\sigma}) $\delta = 0.1, 0.2, 0.3, 0.4, 0.5$. These are the sample sizes we calculated previously, which are $n = 1571, 393, 175, 99, 64$ per group corresponding to effect sizes $\delta = 0.1, 0.2, 0.3, 0.4, 0.5$.**
+
+
+```{r}
+
+```
+
+
+
+
+
+```{r}
+
+
+power80.x <- c(.1,.2,.3,.4,.5) #effect size for mean at 80% power
+
+
+##??
+power80.y <- c(1.17,1.32,1.51,2,2.5) #effect size for var at 80% power
+
+##??
+plot(power80.x,power80.y, xlim = c(.1,.5), ylim=c(1,2.5),type="b")
+
+##And then add lines for other power levels? e.g., 50%, 60%, 70%, 80%?
+
+
+
+
+```
+
+
+
+
+# Visualization I: Power v.s. Sample Size v.s. Phi
 
 ## Data Wrangling
 
@@ -463,10 +503,12 @@ ggplot(data = result_table_unique, mapping = aes(x = n, y = power, group = phi, 
   geom_point() +
   geom_line(size = 0.5) +
   geom_hline(yintercept = 0.8, size = 1, linetype = "dashed") +
-  scale_x_continuous(name = "Sample Size (per group)", breaks = seq(0, 1600, 100)) +
+  scale_x_continuous(name = "Sample Size (per group)", breaks = c(seq(0, 1600, 100), 64, 99, 175, 393, 1571)) +
   scale_y_continuous(name = "Power", breaks = sort(c(seq(0, 1, 0.15), 0.8))) +
   scale_color_manual(name = "Population Variances Ratio", values=c("#B7950B", "#0BB795", "#B387C2", "#FFC300", "#F03A5E")) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(axis.text.x = element_text(angle = 75, vjust = 0.5, hjust=1,
+                                   color = c(rep('black', 17), rep('red', 5))),
+        axis.ticks.length.x = unit(0.25, "cm"))
 
 ```
 
@@ -494,6 +536,13 @@ ggplot(data = result_table_unique, mapping = aes(x = n, y = power, group = phi, 
 a. The population variance ratio is already very further away from 1 (as in the case of $\phi = 1.5 \text{ or } 1/1.5$ and $\phi = 1.4 \text{ or } 1/1.4$) with moderately large sample sizes (as in the case of about 250 samples per group for $\phi = 1.5 \text{ or } 1/1.5$ and about 350 samples per group for $\phi = 1.4 \text{ or } 1/1.4$). 
 
 b. The population variance ratio is NOT very close to 1 (as in the case of $\phi = 1.3 \text{ or } 1/1.3$, $\phi = 1.2 \text{ or } 1/1.2$) with very large sample sizes (as in the case of about 670 samples per group for $\phi = 1.3 \text{ or } 1/1.3$ and about 1225 samples per group for $\phi = 1.2 \text{ or } 1/1.2$).
+
+
+
+
+
+
+
 
 
 

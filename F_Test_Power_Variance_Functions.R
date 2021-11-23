@@ -22,8 +22,6 @@ library(ggpubr)
 ## Arguments: 
 # var1_popl: population variance for the treatment group.
 # var0_popl: population variance for the control group. 
-# var1: sample variance for the treatment group.
-# var0 sample variance for the control group. 
 # n1: sample size for the treatment group.
 # n0: sample size for the control group. 
 # alpha: significance level for the F-test of equality of two population variances. 
@@ -32,11 +30,7 @@ library(ggpubr)
 # power: calculated power for the F-test for equality of two variances. 
 
 
-cal_power_var <- function(var1_popl, var0_popl, var1, var0, n1, n0, alpha){
-  
-  
-  
-  F_stat <- var1/var0
+cal_power_var <- function(var1_popl, var0_popl, n1, n0, alpha){
   
   
   phi <- var1_popl/var0_popl
@@ -67,8 +61,6 @@ cal_power_var <- function(var1_popl, var0_popl, var1, var0, n1, n0, alpha){
   
 # var1popls: a vector containing a list of population variances for different treatment groups. 
 # var0popls: a vector containing a list of population variances for different control groups. 
-# var1s: a vector containing a list of sample variances for different treatment group samples. 
-# var0s: a vector containing a list of sample variances for different control group samples. 
 # n1s: a vector containing a list of sample sizes for different treatment group samples. 
 # n0s: a vector containing a list of sample sizes for different treatment group samples. 
 # alphas: a vector containing a list of significance levels. 
@@ -79,13 +71,13 @@ cal_power_var <- function(var1_popl, var0_popl, var1, var0, n1, n0, alpha){
 
 
 
-simulate_power_var <- function(var1popls, var0popls, var1s, var0s, n1s, n0s, alphas){
+simulate_power_var <- function(var1popls, var0popls, n1s, n0s, alphas){
   
   power <- c()
   
   for(i in 1:length(var1popls)){
     
-    power[i] <- cal_power_var(var1popls[i], var0popls[i], var1s[i], var0s[i], n1s[i], n0s[i], alphas[i])
+    power[i] <- cal_power_var(var1popls[i], var0popls[i], n1s[i], n0s[i], alphas[i])
     
   }
   
@@ -104,4 +96,44 @@ simulate_power_var <- function(var1popls, var0popls, var1s, var0s, n1s, n0s, alp
   
   
 }
+
+
+
+
+## Function cal_effectSize_var(): calculates effect size phi for a two-sided F-test for equality of two variances. 
+
+## Arguments: 
+# n1: sample size for the treatment group.
+# n0: sample size for the control group. 
+# power: power of the two-sided F test for equality of two population variances.
+# alpha: significance level for the F-test of equality of two population variances. 
+
+## Return:
+# phi = $\frac{\sigma_1^2}{\sigma_0^2}$: calculated power for the F-test for equality of two variances. 
+
+
+cal_effectSize_var <- function(n1, n0, power, alpha){
+  
+  
+  
+  F_crit_low <- qf(alpha/2, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
+  
+  F_crit_up <- qf(1 - alpha/2, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
+  
+  p_low <- pf(F_crit_low, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
+  
+  p_up <- pf(F_crit_up, n1-1, n0-1, lower.tail = FALSE, log.p = FALSE)
+  
+  phi <- power / (p_low + p_up)
+  
+  return(phi)
+  
+  
+}
+
+
+
+
+
+
 

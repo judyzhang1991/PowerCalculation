@@ -14,6 +14,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```{r load_pkg}
 library(tidyverse)
 library(ggpubr)
+library(pwr)
 ```
 
 # Introduction
@@ -116,8 +117,6 @@ Arguments:
 mean1_popl: population mean for the treatment group.
 mean0_popl: population mean for the control group. 
 var_popl: population variance for the control/treatment group (as we assume the two populations have the same variance).
-sst: sum of squares between groups.
-sse: sum of squares within groups. 
 n: sample size for the control/treatment group (as we assume the two samples have the same size).
 alpha: significance level for the F-test of equality of two population means. 
 
@@ -127,9 +126,9 @@ power: calculated power for the F-test for equality of two population means.
 
 ```{r cal_power_mean}
 
-cal_power_mean <- function(mean1_popl, mean0_popl, var_popl, sst, sse, n, alpha){
+cal_power_mean <- function(mean1_popl, mean0_popl, var_popl, n, alpha){
   
-  F <- (sst/(2 - 1))/(sse/(2*n - 2))
+ 
   
   mu <- (1/(2*n))*(n*mean1_popl + n*mean0_popl)
   
@@ -150,9 +149,6 @@ cal_power_mean <- function(mean1_popl, mean0_popl, var_popl, sst, sse, n, alpha)
 
 
 **Test cal_power_mean() Function:**
-
-We will be randomly drawing a sample of size $n_{0} = n$ from the control group population and a sample of size $n_{1} = n$ from the treatment group population. 
-
 
 
 Test Data:
@@ -179,27 +175,8 @@ alpha <- 0.5
 
 
 
-trt_sample <- rnorm(n, mean = mean1_popl, sd = sqrt(var_popl))
-trt_label <- rep(1, n)
 
-ctrl_sample <- rnorm(n, mean = mean0_popl, sd = sqrt(var_popl))
-ctrl_label <- rep(0, n)
-
-obsv <- c(trt_sample, ctrl_sample)
-
-group <- c(trt_label, ctrl_label)
-
-dat <- tibble(obsv, group)
-
-model <- lm(obsv ~ as.factor(group), data = dat)
-
-sst <- sum((fitted(model) - mean(dat$obsv))^{2})
-
-sse <- sum((fitted(model) - dat$obsv)^2)
-
-
-
-cal_power_mean(mean1_popl, mean0_popl, var_popl, sst, sse, n, alpha)
+cal_power_mean(mean1_popl, mean0_popl, var_popl, n, alpha)
 
 ```
 
@@ -209,20 +186,17 @@ cal_power_mean(mean1_popl, mean0_popl, var_popl, sst, sse, n, alpha)
 
 Arguments:
 
-mean1popl_list: a vector containing a list of population means for different treatment groups. 
+mean1popls: a vector containing a list of population means for different treatment groups. 
 
-mean0popl_list: a vector containing a list of population means for different control groups. 
+mean0popls: a vector containing a list of population means for different control groups. 
 
-varpopl_list: a vector containing a list of sample variances for different treatment group samples. 
-
-sst_list: a vector containing a list of SSTs calculated for each pair of treatment v.s. control groups.
-
-sse_list: a vector containing a list of SSEs calculated for each pair of treatment v.s. control groups.
-
-n_list: a vector containing a list of sample sizes for different treatment/control group samples. 
+varpopls: a vector containing a list of sample variances for different treatment group samples. 
 
 
-alpha_list: a vector containing a list of significance levels. 
+ns: a vector containing a list of sample sizes for different treatment/control group samples. 
+
+
+alphas: a vector containing a list of significance levels. 
 
 
 Return: 
@@ -232,19 +206,19 @@ result_table: a tibble containing parameters and corresponding power of the F te
 
 ```{r simulate_power_mean}
 
-simulate_power_mean <- function(mean1popl_list, mean0popl_list, varpopl_list, sst_list, sse_list, n_list, alpha_list){
+simulate_power_mean <- function(mean1popls, mean0popls, varpopls, ns, alphas){
   
-  power <- c()
+  powers <- c()
   
-  for(i in 1:length(mean1popl_list)){
+  for(i in 1:length(mean1popls)){
     
-    power[i] <- cal_power_mean(mean1popl_list[i], mean0popl_list[i], varpopl_list[i], sst_list[i], sse_list[i], n_list[i], alpha_list[i])
+    powers[i] <- cal_power_mean(mean1popls[i], mean0popls[i], varpopls[i], ns[i], alphas[i])
     
   }
   
   # Result table will provide four parameters and corresponding power: mu1 (population mean for the treatment group), mu0 (population mean for the control group), n (sample size for control/treatment group), sigma2 (population variance for control/treatment group) and power
   
-  result_table <- tibble(mu1 = mean1popl_list, mu0 = mean0popl_list, sigma2 = varpopl_list, n = n_list, power = power)
+  result_table <- tibble(mu1 = mean1popls, mu0 = mean0popls, sigma2 = varpopls, n = ns, power = powers)
   
   return(result_table)
   
@@ -258,62 +232,104 @@ simulate_power_mean <- function(mean1popl_list, mean0popl_list, varpopl_list, ss
 
 **Test simulate_power_mean() Function:**
 
-We will be randomly drawing N samples of different sizes $n_{0} = n_{1} = n$ from the control group population and the treatment group population. 
 
 Test Data:
 
+$Y_{0j}\sim N(0, 1$ 
+
+$Y_{1j}\sim N(1, 1), N(-0.1, 1), N(0.1, 1)$  
+
+$n_0 = n_1 = 30$ or $15$
+
+$\alpha = 0.05$
 
 ```{r test_simulate_power_mean}
 
-mean1popl_list <- c(1, -0.1, 0.1)
+mean1popls <- c(1, -0.1, 0.1)
 
-mean0popl_list <- c(0, 0, 0)
+mean0popls <- c(0, 0, 0)
 
-varpopl_list <- c(1, 1, 1)
+varpopls <- c(1, 1, 1)
 
-n_list <- c(30, 30, 15)
+ns <- c(30, 30, 15)
 
-alpha_list <- c(0.05, 0.05, 0.05)
-
-
-
-sst_list <- c()
-sse_list <- c()
+alphas <- c(0.05, 0.05, 0.05)
 
 
 
 
-for(i in 1:length(mean1popl_list)){
-  
-  
-  trt_sample <- rnorm(n_list[i], mean = mean1popl_list[i], sd = sqrt(varpopl_list[i]))
-  trt_label <- rep(1, n_list[i])
-
-  ctrl_sample <- rnorm(n_list[i], mean = mean0popl_list[i], sd = sqrt(varpopl_list[i]))
-  ctrl_label <- rep(0, n_list[i])
-
-  obsv <- c(trt_sample, ctrl_sample)
-
-  group <- c(trt_label, ctrl_label)
-
-  dat <- tibble(obsv, group)
-
-  model <- lm(obsv ~ as.factor(group), data = dat)
-
-  sst_list[i] <- sum((fitted(model) - mean(dat$obsv))^{2})
-
-  sse_list[i] <- sum((fitted(model) - dat$obsv)^2)
-  
-}
-
-
-
-result_table_mean <- simulate_power_mean(mean1popl_list, mean0popl_list, varpopl_list, sst_list, sse_list, n_list, alpha_list)
+result_table_mean <- simulate_power_mean(mean1popls, mean0popls, varpopls, ns, alphas)
 
 result_table_mean
 
 
 ```
+
+
+
+**Function cal_sampleSize_var():** calculates the minimum sample size n per group required for the F-test for equality of two population means to have a certain given power. 
+
+**Note:** the F-test for equality of two population means is equivalent to the two-sample t test for population means.
+
+Arguments: 
+delta: effect size for the F-test for equality of two population means.
+power: power of the two-sided F test for equality of two population means.
+alpha: significance level for the F-test of equality of two population means. 
+
+Return:
+n: minimum sample size per group required for the F-test for equality of two population means to reach the given power. 
+
+
+```{r cal_sampleSize_mean}
+
+cal_sampleSize_mean <- function(delta, power, alpha){
+  
+  
+  
+  n_min <- round(as.numeric(pwr.t.test(d=delta, sig.level=alpha, power=power, type="two.sample", alternative="two.sided")$n))
+  
+  return(n_min)
+}
+
+
+```
+
+
+**Test Function cal_sampleSize_mean() Function:**
+
+Test Data:
+
+$\delta = 0.1$
+
+$\alpha = 0.05$
+
+$power = 0.8$
+
+```{r test_cal_effectSize_mean}
+
+
+delta <- 0.1
+
+
+alpha <- 0.05
+
+power <- 0.8
+
+
+n_min <- cal_sampleSize_mean(delta, power, alpha)
+
+n_min
+
+
+```
+
+
+
+
+
+
+
+
 
 
 
@@ -336,50 +352,19 @@ Sample Size: $n_0 = n_1 = n = 5, 60, 115, 170, 225, 280, 335, 490, 445, 500$
 ```{r explore_sample_size}
 
 
-mean1popl_list <- rep(0.5, 10)
+mean1popls <- rep(0.5, 10)
 
-mean0popl_list <- rep(0, 10)
+mean0popls <- rep(0, 10)
 
-varpopl_list <- rep(1, 10)
+varpopls <- rep(1, 10)
 
-alpha_list <- rep(0.05, 10)
+alphas <- rep(0.05, 10)
 
-n_list <- seq(5, 500, length.out = 10)
-
-
-sst_list <- c()
-sse_list <- c()
-
-
-for(i in 1:length(mean1popl_list)){
-  
-  
-  trt_sample <- rnorm(n_list[i], mean = mean1popl_list[i], sd = sqrt(varpopl_list[i]))
-  trt_label <- rep(1, n_list[i])
-
-  ctrl_sample <- rnorm(n_list[i], mean = mean0popl_list[i], sd = sqrt(varpopl_list[i]))
-  ctrl_label <- rep(0, n_list[i])
-
-  obsv <- c(trt_sample, ctrl_sample)
-
-  group <- c(trt_label, ctrl_label)
-
-  dat <- tibble(obsv, group)
-
-  model <- lm(obsv ~ as.factor(group), data = dat)
-  
-  
-
-  sst_list[i] <- sum((fitted(model) - mean(dat$obsv))^{2})
-
-  sse_list[i] <- sum((fitted(model) - dat$obsv)^2)
-
-  
-}
+ns <- seq(5, 500, length.out = 10)
 
 
 
-result_table_mean <- simulate_power_mean(mean1popl_list, mean0popl_list, varpopl_list, sst_list, sse_list, n_list, alpha_list)
+result_table_mean <- simulate_power_mean(mean1popls, mean0popls, varpopls, ns, alphas)
 
 result_table_mean
 
