@@ -115,25 +115,41 @@ simulate_power_var <- function(var1popls, var0popls, n1s, n0s, alphas){
 cal_effectSize_var <- function(n1, n0, power, alpha){
   
   
-  
   F_crit_low <- qf(alpha/2, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
   
   F_crit_up <- qf(1 - alpha/2, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
   
-  p_low <- pf(F_crit_low, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
+  phi <- 1
   
-  p_up <- pf(F_crit_up, n1-1, n0-1, lower.tail = FALSE, log.p = FALSE)
+  p_low <- pf(phi*F_crit_low, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
   
-  phi <- power / (p_low + p_up)
+  p_up <- pf(phi*F_crit_up, n1-1, n0-1, lower.tail = FALSE, log.p = FALSE)
+  
+  power_cal <- p_low + p_up
+  
+  
+  # Limit error within 0.01 (the difference between the calculated power and the given power is no larger than 0.01)
+  while(abs(power_cal - power) >0.01){
+    
+    # If calculated power is greater than the given power, we will decrease the effect size.
+    if(power_cal > power){
+      phi <- phi - 0.01
+    }
+    
+    # If the calcualted power is less than the given power, we will increase the effect size.
+    else{
+      
+      phi <- phi + 0.01
+    }
+    
+    p_low <- pf(phi*F_crit_low, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
+    
+    p_up <- pf(phi*F_crit_up, n1-1, n0-1, lower.tail = FALSE, log.p = FALSE)
+    
+    power_cal <- p_low + p_up
+  }
   
   return(phi)
   
   
 }
-
-
-
-
-
-
-

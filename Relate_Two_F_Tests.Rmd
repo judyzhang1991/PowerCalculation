@@ -117,12 +117,12 @@ for(i in 1:length(powers)){
 powers_result <- unlist(powers_result)
 
 
-meanTest_power50_80_sampleSizes <- tibble(Power = powers_result, Effect_Size = rep(deltas, length(powers)), Sample_Size_per_Group = unlist(ns_mean))
+meanTest_power50to80_sampleSizes <- tibble(Power = powers_result, Effect_Size = rep(deltas, length(powers)), Sample_Size_per_Group = unlist(ns_mean))
 
 
 
 
-meanTest_power50_80_sampleSizes
+meanTest_power50to80_sampleSizes
 
 ```
 
@@ -177,7 +177,7 @@ $n_{0} = n_{1} = n = 1571, 393, 175, 99, 64$
 
 ```{r cal_power_variance_mean01}
 
-
+ns_mean <- c(1571, 393, 175, 99, 64)
 
 
 sigma_sqr1s <- c(1.1, 1/1.1, 1.2, 1/1.2, 1.3, 1/1.3, 1.4, 1/1.4, 1.5, 1/1.5)
@@ -190,34 +190,12 @@ alphas <- rep(0.05, length(sigma_sqr1s))
 
 
 
-s_sqr1s <- c()
-s_sqr0s <- c()
 
-
-
-
-
-for(i in 1:length(sigma_sqr1s)){
-  
-  trt <- rnorm(ns_mean[1], mean = mu1, sd = sqrt(sigma_sqr1s[i]))
-  
-  s_sqr1s[i] <- (sd(trt))^2
-  
-  ctrl <- rnorm(ns_mean[1], mean = mu0, sd = sqrt(sigma_sqr0s[i]))
-  
-  s_sqr0s[i] <- (sd(ctrl))^2
-  
-}
-
-
-
-
-result_table_1 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[1], length(sigma_sqr1s)), rep(ns_mean[1], length(sigma_sqr1s)), alphas)
+result_table_1 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, rep(ns_mean[1], length(sigma_sqr1s)), rep(ns_mean[1], length(sigma_sqr1s)), alphas)
 
 result_table_1 <- result_table_1 %>% add_column(delta = rep(0.1, length(sigma_sqr1s)), .before = "phi")
 
 #result_table_1
-
 
 ```
 
@@ -230,6 +208,7 @@ result_table_1 <- result_table_1 %>% add_column(delta = rep(0.1, length(sigma_sq
 ```{r cal_power_variance_mean02}
 
 
+ns_mean <- c(1571, 393, 175, 99, 64)
 
 
 sigma_sqr1s <- c(1.1, 1/1.1, 1.2, 1/1.2, 1.3, 1/1.3, 1.4, 1/1.4, 1.5, 1/1.5)
@@ -242,29 +221,7 @@ alphas <- rep(0.05, length(sigma_sqr1s))
 
 
 
-s_sqr1s <- c()
-s_sqr0s <- c()
-
-
-
-
-
-for(i in 1:length(sigma_sqr1s)){
-  
-  trt <- rnorm(ns_mean[2], mean = mu1, sd = sqrt(sigma_sqr1s[i]))
-  
-  s_sqr1s[i] <- (sd(trt))^2
-  
-  ctrl <- rnorm(ns_mean[2], mean = mu0, sd = sqrt(sigma_sqr0s[i]))
-  
-  s_sqr0s[i] <- (sd(ctrl))^2
-  
-}
-
-
-
-
-result_table_2 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[2], length(sigma_sqr1s)), rep(ns_mean[2], length(sigma_sqr1s)), alphas)
+result_table_2 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, rep(ns_mean[2], length(sigma_sqr1s)), rep(ns_mean[2], length(sigma_sqr1s)), alphas)
 
 result_table_2 <- result_table_2 %>% add_column(delta = rep(0.2, length(sigma_sqr1s)), .before = "phi")
 
@@ -283,6 +240,7 @@ result_table_2 <- result_table_2 %>% add_column(delta = rep(0.2, length(sigma_sq
 ```{r cal_power_variance_mean03}
 
 
+ns_mean <- c(1571, 393, 175, 99, 64)
 
 
 sigma_sqr1s <- c(1.1, 1/1.1, 1.2, 1/1.2, 1.3, 1/1.3, 1.4, 1/1.4, 1.5, 1/1.5)
@@ -295,29 +253,8 @@ alphas <- rep(0.05, length(sigma_sqr1s))
 
 
 
-s_sqr1s <- c()
-s_sqr0s <- c()
 
-
-
-
-
-for(i in 1:length(sigma_sqr1s)){
-  
-  trt <- rnorm(ns_mean[3], mean = mu1, sd = sqrt(sigma_sqr1s[i]))
-  
-  s_sqr1s[i] <- (sd(trt))^2
-  
-  ctrl <- rnorm(ns_mean[3], mean = mu0, sd = sqrt(sigma_sqr0s[i]))
-  
-  s_sqr0s[i] <- (sd(ctrl))^2
-  
-}
-
-
-
-
-result_table_3 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[3], length(sigma_sqr1s)), rep(ns_mean[3], length(sigma_sqr1s)), alphas)
+result_table_3 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, rep(ns_mean[3], length(sigma_sqr1s)), rep(ns_mean[3], length(sigma_sqr1s)), alphas)
 
 result_table_3 <- result_table_3 %>% add_column(delta = rep(0.3, length(sigma_sqr1s)), .before = "phi")
 
@@ -335,7 +272,7 @@ result_table_3 <- result_table_3 %>% add_column(delta = rep(0.3, length(sigma_sq
 
 ```{r cal_power_variance_mean04}
 
-
+ns_mean <- c(1571, 393, 175, 99, 64)
 
 
 sigma_sqr1s <- c(1.1, 1/1.1, 1.2, 1/1.2, 1.3, 1/1.3, 1.4, 1/1.4, 1.5, 1/1.5)
@@ -348,29 +285,7 @@ alphas <- rep(0.05, length(sigma_sqr1s))
 
 
 
-s_sqr1s <- c()
-s_sqr0s <- c()
-
-
-
-
-
-for(i in 1:length(sigma_sqr1s)){
-  
-  trt <- rnorm(ns_mean[4], mean = mu1, sd = sqrt(sigma_sqr1s[i]))
-  
-  s_sqr1s[i] <- (sd(trt))^2
-  
-  ctrl <- rnorm(ns_mean[4], mean = mu0, sd = sqrt(sigma_sqr0s[i]))
-  
-  s_sqr0s[i] <- (sd(ctrl))^2
-  
-}
-
-
-
-
-result_table_4 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[4], length(sigma_sqr1s)), rep(ns_mean[4], length(sigma_sqr1s)), alphas)
+result_table_4 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, rep(ns_mean[4], length(sigma_sqr1s)), rep(ns_mean[4], length(sigma_sqr1s)), alphas)
 
 result_table_4 <- result_table_4 %>% add_column(delta = rep(0.4, length(sigma_sqr1s)), .before = "phi")
 
@@ -389,6 +304,7 @@ result_table_4 <- result_table_4 %>% add_column(delta = rep(0.4, length(sigma_sq
 
 ```{r cal_power_variance_mean05}
 
+ns_mean <- c(1571, 393, 175, 99, 64)
 
 
 
@@ -402,29 +318,8 @@ alphas <- rep(0.05, length(sigma_sqr1s))
 
 
 
-s_sqr1s <- c()
-s_sqr0s <- c()
 
-
-
-
-
-for(i in 1:length(sigma_sqr1s)){
-  
-  trt <- rnorm(ns_mean[5], mean = mu1, sd = sqrt(sigma_sqr1s[i]))
-  
-  s_sqr1s[i] <- (sd(trt))^2
-  
-  ctrl <- rnorm(ns_mean[5], mean = mu0, sd = sqrt(sigma_sqr0s[i]))
-  
-  s_sqr0s[i] <- (sd(ctrl))^2
-  
-}
-
-
-
-
-result_table_5 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, s_sqr1s, s_sqr0s, rep(ns_mean[5], length(sigma_sqr1s)), rep(ns_mean[5], length(sigma_sqr1s)), alphas)
+result_table_5 <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, rep(ns_mean[5], length(sigma_sqr1s)), rep(ns_mean[5], length(sigma_sqr1s)), alphas)
 
 result_table_5 <- result_table_5 %>% add_column(delta = rep(0.5, length(sigma_sqr1s)), .before = "phi")
 
@@ -448,7 +343,7 @@ result_table <- bind_rows(list(result_table_1, result_table_2, result_table_3,
 
 
 
-# result_table
+result_table
 
 
 ```
@@ -459,12 +354,53 @@ result_table <- bind_rows(list(result_table_1, result_table_2, result_table_3,
 # Calculate Population Variance Ratio ($\phi$)
 
 
+## 80% Power
+
 **We are going to calculate population variance ratio $\phi$ using sample sizes that would result in a power of $80\%$ for the F test for equality of population means with effect sizes (standardized mean differences: $\delta = \frac{\mu_{1} - \mu_{0}}{\sigma}) $\delta = 0.1, 0.2, 0.3, 0.4, 0.5$. These are the sample sizes we calculated previously, which are $n = 1571, 393, 175, 99, 64$ per group corresponding to effect sizes $\delta = 0.1, 0.2, 0.3, 0.4, 0.5$.**
 
 
 ```{r}
 
+ns_mean_80 <- c(1571, 393, 175, 99, 64)
+
+alpha <- 0.05
+power <- 0.8
+phi_var_80 <- c()
+
+for(i in 1:length(ns_mean_80)){
+  
+  phi_var_80[i] <- cal_effectSize_var(ns_mean_80[i], ns_mean_80[i], power, alpha)
+  
+}
+
+phi_var_80
+
 ```
+
+
+## 70% Power
+
+**We are going to calculate population variance ratio $\phi$ using sample sizes that would result in a power of $70\%$ for the F test for equality of population means with effect sizes (standardized mean differences: $\delta = \frac{\mu_{1} - \mu_{0}}{\sigma}) $\delta = 0.1, 0.2, 0.3, 0.4, 0.5$. These are the sample sizes we calculated previously, which are $n = 1235, 310, 138, 78, 50$ per group corresponding to effect sizes $\delta = 0.1, 0.2, 0.3, 0.4, 0.5$.**
+
+
+```{r}
+
+ns_mean_70 <- c(1235, 310, 138, 78, 50)
+
+alpha <- 0.05
+power <- 0.7
+phi_var_70 <- c()
+
+for(i in 1:length(ns_mean_70)){
+  
+  phi_var_70[i] <- cal_effectSize_var(ns_mean_70[i], ns_mean_70[i], power, alpha)
+  
+}
+
+phi_var_70
+
+```
+
 
 
 
