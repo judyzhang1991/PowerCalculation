@@ -128,18 +128,21 @@ cal_effectSize_var <- function(n1, n0, power, alpha){
   power_cal <- p_low + p_up
   
   
-  # Limit error within 0.01 (the difference between the calculated power and the given power is no larger than 0.01)
-  while(abs(power_cal - power) >0.01){
+  # Limit error within 0.05 (the difference between the calculated power and the given power is no larger than 0.01)
+  while(abs(power_cal - power) > 0.05){
     
-    # If calculated power is greater than the given power, we will decrease the effect size.
+    # If calculated power is greater than the given power, we will decrease the difference between 1 and current value of phi.
     if(power_cal > power){
-      phi <- phi - 0.01
+      
+      
+      phi <- ifelse(phi > 1, phi - 0.01, phi + 0.01) 
+      
     }
     
-    # If the calcualted power is less than the given power, we will increase the effect size.
+    # If the calculated power is less than the given power, we will increase the difference between 1 and current value of phi. 
     else{
       
-      phi <- phi + 0.01
+      phi <- ifelse(phi > 1, phi + 0.01, phi - 0.01)
     }
     
     p_low <- pf(phi*F_crit_low, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
@@ -147,7 +150,13 @@ cal_effectSize_var <- function(n1, n0, power, alpha){
     p_up <- pf(phi*F_crit_up, n1-1, n0-1, lower.tail = FALSE, log.p = FALSE)
     
     power_cal <- p_low + p_up
+    
+    
+    
+    
   }
+  print(paste("power:", power_cal))
+ 
   
   return(phi)
   
