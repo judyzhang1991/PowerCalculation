@@ -2,7 +2,9 @@
 title: "Relate_Two_F_Tests"
 author: "Jingyang(Judy) Zhang"
 date: "11/11/2021"
-output: html_document
+output: 
+  html_document:
+      code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -398,6 +400,86 @@ phi_var_80
 ```
 
 
+**Next, using sample size required for the F test for equality of population means to have a power of 80% to calculate minimum detectable effect size $\phi$ required for the F test for equality of population variances to have a power of 80%, 70%, 60%, and 50%.**
+```{r}
+
+alpha <- 0.05
+
+# Sample sizes used
+
+ns_mean_80
+
+# Minimum Detectable Phi required for Power of 80%
+
+phi80_mean80 <- phi_var_80
+
+# Minimum Detectable Phi required for Power of 70%
+
+
+power <- 0.7
+phi70_mean80 <- c()
+
+for(i in 1:length(ns_mean_80)){
+  
+  phi70_mean80[i] <- cal_effectSize_var(ns_mean_80[i], ns_mean_80[i], power, alpha)
+  
+}
+
+
+# Because of symmetry, the power for phi equals power for 1/phi, we will use thus change it to 1/phi so that all ratios are greater than 1. 
+phi70_mean80 <- 1/phi70_mean80
+
+phi70_mean80
+
+
+
+
+# Minimum Detectable Phi required for Power of 60%
+
+
+power <- 0.6
+phi60_mean80 <- c()
+
+for(i in 1:length(ns_mean_80)){
+  
+  phi60_mean80[i] <- cal_effectSize_var(ns_mean_80[i], ns_mean_80[i], power, alpha)
+  
+}
+
+
+# Because of symmetry, the power for phi equals power for 1/phi, we will use thus change it to 1/phi so that all ratios are greater than 1. 
+phi60_mean80 <- 1/phi60_mean80
+
+phi60_mean80
+
+
+
+# Minimum Detectable Phi required for Power of 50%
+
+
+power <- 0.5
+phi50_mean80 <- c()
+
+for(i in 1:length(ns_mean_80)){
+  
+  phi50_mean80[i] <- cal_effectSize_var(ns_mean_80[i], ns_mean_80[i], power, alpha)
+  
+}
+
+
+# Because of symmetry, the power for phi equals power for 1/phi, we will use thus change it to 1/phi so that all ratios are greater than 1. 
+phi50_mean80 <- 1/phi50_mean80
+
+phi50_mean80
+
+
+
+
+
+```
+
+
+
 ## 70% Power
 
 **We are going to calculate population variance ratio $\phi$ using sample sizes that would result in a power of $70\%$ for the F test for equality of population means with effect sizes (standardized mean differences: $\delta = \frac{\mu_{1} - \mu_{0}}{\sigma}) $\delta = 0.1, 0.2, 0.3, 0.4, 0.5$. These are the sample sizes we calculated previously, which are $n = 1235, 310, 138, 78, 50$ per group corresponding to effect sizes $\delta = 0.1, 0.2, 0.3, 0.4, 0.5$.**
@@ -567,7 +649,7 @@ b. The population variance ratio is NOT very close to 1 (as in the case of $\phi
 
 
 
-# Visualization II: Phi v.s. Sample Size v.s. Power
+# Visualization II: Delta v.s. Phi v.s. Power (80%, 70%, 60%, 50%)
 
 ## Data Wrangling
 
@@ -577,15 +659,15 @@ b. The population variance ratio is NOT very close to 1 (as in the case of $\phi
 delta_mean <- c(.1,.2,.3,.4,.5) 
 
 
-# Effect size for F test for equality of population variances with 50% power (using sample size calculated from F test for equality of population means with 80% power)
+# Effect size for F test for equality of population variances with 50% power (using sample size calculated from F test for equality of population means with 50% power)
 
 phi_var_50 
 
-# Effect size for F test for equality of population variances with 60% power (using sample size calculated from F test for equality of population means with 80% power)
+# Effect size for F test for equality of population variances with 60% power (using sample size calculated from F test for equality of population means with 60% power)
 
 phi_var_60
 
-# Effect size for F test for equality of population variances with 70% power (using sample size calculated from F test for equality of population means with 80% power)
+# Effect size for F test for equality of population variances with 70% power (using sample size calculated from F test for equality of population means with 70% power)
 
 phi_var_70
 
@@ -611,7 +693,65 @@ ggplot(phi_delta_dat, aes(x = delta, y = phi, group = as.factor(power))) +
   scale_x_continuous(name = "Delta (Effect Size for Difference in Means)", breaks = seq(0, 1, 0.1)) +
   scale_y_continuous(name = "Phi (Effect Size for Difference in Variances", breaks = seq(1, 2, 0.2)) + 
   scale_colour_discrete(name = "Power") + 
-  ggtitle(label = "Effect Sizes Required for Different Power Levels", subtitle = "F Test for Equality of Population Means and F Test for Equality of Population Variances")
+  ggtitle(label = "Effect Sizes Phi Required for Different Power Levels", subtitle = "F Test for Equality of Population Means and F Test for Equality of Population Variances")
+  
+
+
+
+
+```
+
+
+
+
+
+
+# Visualization III: Delta (80%) v.s. Phi (80%, 70%, 60%, 50%)
+
+## Data Wrangling
+
+```{r}
+
+# Effect size for F test for equality of population means. 
+delta_mean <- c(.1,.2,.3,.4,.5) 
+
+
+# Effect size for F test for equality of population variances with 50% power (using sample size calculated from F test for equality of population means with 80% power)
+
+phi50_mean80
+
+# Effect size for F test for equality of population variances with 60% power (using sample size calculated from F test for equality of population means with 80% power)
+
+phi60_mean80
+
+# Effect size for F test for equality of population variances with 70% power (using sample size calculated from F test for equality of population means with 80% power)
+
+phi70_mean80
+
+# Effect size for F test for equality of population variances with 80% power (using sample size calculated from F test for equality of population means with 80% power)
+
+phi80_mean80
+
+delta80_phi80 <- tibble('delta' = delta_mean, 'phi' = phi80_mean80, 'var_power' = rep(0.8, length(delta_mean)))
+
+delta80_phi70 <- tibble('delta' = delta_mean, 'phi' = phi70_mean80, 'var_power' = rep(0.7, length(delta_mean)))
+
+delta80_phi60 <- tibble('delta' = delta_mean, 'phi' = phi60_mean80, 'var_power' = rep(0.6, length(delta_mean)))
+
+delta80_phi50 <- tibble('delta' = delta_mean, 'phi' = phi50_mean80, 'var_power' = rep(0.5, length(delta_mean)))
+
+
+phi_delta80_dat <- rbind(delta80_phi50, delta80_phi60, delta80_phi70, delta80_phi80)
+
+
+
+ggplot(phi_delta80_dat, aes(x = delta, y = phi, group = as.factor(var_power))) + 
+  geom_point(aes(color = as.factor(var_power))) + 
+  geom_line(aes(color = as.factor(var_power))) + 
+  scale_x_continuous(name = "Delta (Effect Size for Difference in Means)", breaks = seq(0, 1, 0.1)) +
+  scale_y_continuous(name = "Phi (Effect Size for Difference in Variances", breaks = seq(1, 2, 0.2)) + 
+  scale_colour_discrete(name = "Power") + 
+  ggtitle(label = "Effect Sizes Phi Required for Different Power Levels with 80% Power of the Mean Test", subtitle = "F Test for Equality of Population Means and F Test for Equality of Population Variances")
   
 
 
