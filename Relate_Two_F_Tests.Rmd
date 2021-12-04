@@ -702,8 +702,9 @@ ggplot(phi_delta_dat, aes(x = delta, y = phi, group = as.factor(power))) +
 ```
 
 
+**Observations**
 
-
+1. For moderate to large effect size $\delta$ (e.g. $\delta = 0.3, 0.4, 0.5$), the minimum detectable effect size $\phi$ has to be fairly large (e.g. $\phi = 1.5, 1.7, 2$) for the F test for equality of population variances to have at least 50% power. 
 
 
 # Visualization III: Delta (80%) v.s. Phi (80%, 70%, 60%, 50%)
@@ -759,5 +760,6 @@ ggplot(phi_delta80_dat, aes(x = delta, y = phi, group = as.factor(var_power))) +
 
 ```
 
+**Observations**
 
 
