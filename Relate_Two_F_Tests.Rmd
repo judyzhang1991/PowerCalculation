@@ -131,6 +131,76 @@ meanTest_power50to80_sampleSizes
 
 
 
+*Validation* 
+Calculate sample size using the formula:
+
+$n\approx\frac{4(t_{\text{crit}}+t_{1-\beta})}{\delta^2_a}$,
+
+where $\delta_a = \frac{\mu_a}{\sigma} = \frac{\mu_1 - \mu_0}{\sigma}$ is the effect size (measured by the standardized mean difference),
+
+where $\sigma^2$ is the shared population variance of the treatment group and the control group. 
+
+
+Note: as $t_{\text{crit}}$ and $t_{1-\beta}$ are both functions of sample size $n$ (via d.f.), we will use z-scores (quantiles for standardized normal distribution $N(0,1)$) to approximate them as for large sample sizes (i.e. large d.f.s), t distribution is very close to the standard normal distribution. That is, we will use $z_{\text{crit}}$ and $z_{1-\beta}$ instead. 
+
+```{r sampleSize_mean_validation}
+
+deltas <- seq(0.1, 0.5, by = 0.1)
+
+powers <- c(0.5, 0.6, 0.7, 0.8)
+
+alpha <- 0.05
+
+  
+z_crit <- qnorm(1-alpha/2, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+
+z_ps <- c()
+
+for(i in 1:length(powers)){
+  
+  z_ps[i] <- qnorm(powers[i], mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+  
+}
+
+
+ns <- tibble()
+
+for(i in 1:length(z_ps)){
+  
+  for(j in 1:length(deltas)){
+    
+    ns[i, j] <- round(4*(z_crit + z_ps[i])/(deltas[j])^2)
+    
+  }
+  
+}
+
+meanTest_power50to80_sampleSizes_valid <- ns %>% pivot_longer(c("...1", "...2", "...3", "...4", "...5"), names_to = "Delta", values_to = "Sample_Size_per_Group") %>%
+  mutate(
+    Effect_Size = case_when(
+      Delta == "...1" ~ 0.1,
+      Delta == "...2" ~ 0.2,
+      Delta == "...3" ~ 0.3, 
+      Delta == "...4" ~ 0.4,
+      Delta == "...5" ~ 0.5
+    ),
+    
+    Power = c(rep(0.5, 5), rep(0.6, 5), rep(0.7, 5), rep(0.8, 5))
+  ) %>%
+  
+  select (Power, Effect_Size, Sample_Size_per_Group)
+
+
+
+
+meanTest_power50to80_sampleSizes_valid
+
+
+```
+
+
+
+
 
 
 

@@ -181,9 +181,7 @@ cal_effectSize_var_num <- function(n1, n0, power, alpha){
 cal_effectSize_var <- function(n1, n0, power, alpha){
   
   
-  phi <- pwr.f2.test(u = n1-1, v = n0-1, sig.level = alpha, power = power)$f2
-  
-  
+
   
   return(phi)
   
