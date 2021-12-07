@@ -30,7 +30,7 @@ library(ggpubr)
 # power: calculated power for the F-test for equality of two variances. 
 
 
-cal_power_var <- function(var1_popl, var0_popl, n1, n0, alpha){
+cal_power_var_num <- function(var1_popl, var0_popl, n1, n0, alpha){
   
   
   phi <- var1_popl/var0_popl
@@ -100,7 +100,7 @@ simulate_power_var <- function(var1popls, var0popls, n1s, n0s, alphas){
 
 
 
-## Function cal_effectSize_var(): calculates effect size phi for a two-sided F-test for equality of two variances. 
+## Function cal_effectSize_var_num(): calculates effect size phi for a two-sided F-test for equality of two variances numerically.
 
 ## Arguments: 
 # n1: sample size for the treatment group.
@@ -109,10 +109,10 @@ simulate_power_var <- function(var1popls, var0popls, n1s, n0s, alphas){
 # alpha: significance level for the F-test of equality of two population variances. 
 
 ## Return:
-# phi = $\frac{\sigma_1^2}{\sigma_0^2}$: calculated power for the F-test for equality of two variances. 
+# phi = $\frac{\sigma_1^2}{\sigma_0^2}$: calculated effect size for the F-test for equality of two variances given significance level alpha and power. 
 
 
-cal_effectSize_var <- function(n1, n0, power, alpha){
+cal_effectSize_var_num <- function(n1, n0, power, alpha){
   
   
   F_crit_low <- qf(alpha/2, n1-1, n0-1, lower.tail = TRUE, log.p = FALSE)
@@ -157,6 +157,33 @@ cal_effectSize_var <- function(n1, n0, power, alpha){
   }
   print(paste("power:", power_cal))
  
+  
+  return(phi)
+  
+  
+}
+
+
+
+
+## Function cal_effectSize_var(): calculates effect size phi for a two-sided F-test for equality of two variances analytically.
+
+## Arguments: 
+# n1: sample size for the treatment group.
+# n0: sample size for the control group. 
+# power: power of the two-sided F test for equality of two population variances.
+# alpha: significance level for the F-test of equality of two population variances. 
+
+## Return:
+# phi = $\frac{\sigma_1^2}{\sigma_0^2}$: calculated effect size for the F-test for equality of two variances given significance level alpha and power. 
+
+
+cal_effectSize_var <- function(n1, n0, power, alpha){
+  
+  
+  phi <- pwr.f2.test(u = n1-1, v = n0-1, sig.level = alpha, power = power)$f2
+  
+  
   
   return(phi)
   

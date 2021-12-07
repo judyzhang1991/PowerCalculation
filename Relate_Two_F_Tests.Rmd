@@ -387,7 +387,7 @@ phi_var_80 <- c()
 
 for(i in 1:length(ns_mean_80)){
   
-  phi_var_80[i] <- cal_effectSize_var(ns_mean_80[i], ns_mean_80[i], power, alpha)
+  phi_var_80[i] <- cal_effectSize_var_num(ns_mean_80[i], ns_mean_80[i], power, alpha)
   
 }
 
@@ -421,7 +421,7 @@ phi70_mean80 <- c()
 
 for(i in 1:length(ns_mean_80)){
   
-  phi70_mean80[i] <- cal_effectSize_var(ns_mean_80[i], ns_mean_80[i], power, alpha)
+  phi70_mean80[i] <- cal_effectSize_var_num(ns_mean_80[i], ns_mean_80[i], power, alpha)
   
 }
 
@@ -442,7 +442,7 @@ phi60_mean80 <- c()
 
 for(i in 1:length(ns_mean_80)){
   
-  phi60_mean80[i] <- cal_effectSize_var(ns_mean_80[i], ns_mean_80[i], power, alpha)
+  phi60_mean80[i] <- cal_effectSize_var_num(ns_mean_80[i], ns_mean_80[i], power, alpha)
   
 }
 
@@ -462,7 +462,7 @@ phi50_mean80 <- c()
 
 for(i in 1:length(ns_mean_80)){
   
-  phi50_mean80[i] <- cal_effectSize_var(ns_mean_80[i], ns_mean_80[i], power, alpha)
+  phi50_mean80[i] <- cal_effectSize_var_num(ns_mean_80[i], ns_mean_80[i], power, alpha)
   
 }
 
@@ -497,7 +497,7 @@ phi_var_70 <- c()
 
 for(i in 1:length(ns_mean_70)){
   
-  phi_var_70[i] <- cal_effectSize_var(ns_mean_70[i], ns_mean_70[i], power, alpha)
+  phi_var_70[i] <- cal_effectSize_var_num(ns_mean_70[i], ns_mean_70[i], power, alpha)
   
 }
 
@@ -528,7 +528,7 @@ phi_var_60 <- c()
 
 for(i in 1:length(ns_mean_60)){
   
-  phi_var_60[i] <- cal_effectSize_var(ns_mean_60[i], ns_mean_60[i], power, alpha)
+  phi_var_60[i] <- cal_effectSize_var_num(ns_mean_60[i], ns_mean_60[i], power, alpha)
   
 }
 
@@ -558,7 +558,7 @@ phi_var_50 <- c()
 
 for(i in 1:length(ns_mean_50)){
   
-  phi_var_50[i] <- cal_effectSize_var(ns_mean_50[i], ns_mean_50[i], power, alpha)
+  phi_var_50[i] <- cal_effectSize_var_num(ns_mean_50[i], ns_mean_50[i], power, alpha)
   
 }
 
@@ -762,4 +762,5 @@ ggplot(phi_delta80_dat, aes(x = delta, y = phi, group = as.factor(var_power))) +
 
 **Observations**
 
+1. For moderate to large effect size $\delta$ (e.g. $\delta = 0.3, 0.4, 0.5$), the minimum detectable effect size $\phi$ has to be fairly large (e.g. $\phi = 1.5, 1.7, 2$) for the F test for equality of population variances to have at least 50% power. 
 
