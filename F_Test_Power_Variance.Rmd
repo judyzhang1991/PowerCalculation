@@ -58,7 +58,7 @@ $H_{a}: \sigma^{2}_{0}\neq\sigma^{2}_{1}$
  
 **Test Statistic:**
 
-$F = \frac{\text{SSE}_{1}/(n-1)}{\text{SSE}_{0}/(n-1)}$
+$F = \frac{\text{SSE}_{1}/(n-1)}{\text{SSE}_{0}/(n-1)} = \frac{\text{MSE}_{1}}{\text{MSE}_{0}} = \frac{s_{1}^{2}}{s_{0}^{2}}$
 
 where $\text{SSE}_{i}$ is the sum of error squares for group $i$;
 

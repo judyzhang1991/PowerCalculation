@@ -30,7 +30,7 @@ library(ggpubr)
 # power: calculated power for the F-test for equality of two variances. 
 
 
-cal_power_var_num <- function(var1_popl, var0_popl, n1, n0, alpha){
+cal_power_var <- function(var1_popl, var0_popl, n1, n0, alpha){
   
   
   phi <- var1_popl/var0_popl
