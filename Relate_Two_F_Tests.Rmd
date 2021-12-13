@@ -134,6 +134,8 @@ meanTest_power50to80_sampleSizes
 *Validation* 
 Calculate sample size using the formula:
 
+Note: this is the formula for a two sample t test with alternative to be two sided: 
+
 $n = \frac{(t_{\text{crit}} + t_{1-\beta})^2}{\delta_{a}^{2}}\frac{1}{P(1-P)}$,
 
 where $n = n_{0} + n_{1}$ is the total sample size;
@@ -174,7 +176,7 @@ for(i in 1:length(z_ps)){
   
   for(j in 1:length(deltas)){
     
-    ns[i, j] <- round(4*(z_crit + z_ps[i])/(deltas[j])^2)
+    # ns[i, j] <- round(4*(z_crit + z_ps[i])/(deltas[j])^2)
     
     ns_new[i,j] <- round(((z_crit + z_ps[i])^2)/(deltas[j]^2)*(1/(P*(1-P))))
     
