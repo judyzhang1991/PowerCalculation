@@ -65,24 +65,46 @@ function(n = NULL, d = NULL, sig.level = 0.05, power = NULL,
   # Check if the parameter alternative entered is valid (i.e. matches one of "two.sided", "greater", "less")
   alternative <- match.arg(alternative)
   
-  # Assign values 1, 2, 1 to the three different types. 
+  # Assign values 1, 2, 1 to the three different types.
+  # Note: the t-test procedure for one.sample is the same for the paired. 
+  
+  # Switch according to type argument.
   tsample <- switch(type, one.sample = 1, two.sample = 2, 
                     paired = 1)
+                    
+  # Switch according to alternative argument.
+  # This variable is used to distinguish the three types of alternative hypothesis. 
   ttside <- switch(alternative, less = 1, two.sided = 2, greater = 3)
+  
+  # Switch according to alternative argument. 
+  # This variable is used to determine whether the significance level needs to be divided by two (e.g. alpha or alpha/2).
   tside <- switch(alternative, less = 1, two.sided = 2, greater = 1)
+  
+  # If it's a two-sided test and the effect size is not null, make the effect size equal to its absolute value. 
   if (tside == 2 && !is.null(d)) 
     d <- abs(d)
+  
+  # If it's a one sided less than test, 
   if (ttside == 1) {
+  
+    # p.body is the power function. 
+    
     p.body <- quote({
+      # This is degrees of freedom, one sample df = (n-1), two sample df = 2(n-1).
       nu <- (n - 1) * tsample
-      pt(qt(sig.level/tside, nu, lower = TRUE), nu, ncp = sqrt(n/tsample) * 
-           d, lower = TRUE)
+      
+      # ncp for one sample test: sqrt(n/1)*d = sqrt(n)*(mu1-mu0)/sigma. 
+      
+      # ncp for two sample test: sqrt(n/2)*d = sqrt(n/2)(mu1-mu0)/sigma. 
+      pt(qt(sig.level/tside, nu, lower = TRUE), nu, ncp = sqrt(n/tsample) * d, lower = TRUE)
     })
   }
   if (ttside == 2) {
     p.body <- quote({
       nu <- (n - 1) * tsample
       qu <- qt(sig.level/tside, nu, lower = FALSE)
+      
+     
       pt(qu, nu, ncp = sqrt(n/tsample) * d, lower = FALSE) + 
         pt(-qu, nu, ncp = sqrt(n/tsample) * d, lower = TRUE)
     })
@@ -97,6 +119,8 @@ function(n = NULL, d = NULL, sig.level = 0.05, power = NULL,
   if (is.null(power)) 
     power <- eval(p.body)
   else if (is.null(n)) 
+  
+    # Solve the function power function - power = 0 for n between 2+1e-10 to 1e+09. 
     n <- uniroot(function(n) eval(p.body) - power, c(2 + 
                                                        1e-10, 1e+09))$root
   else if (is.null(d)) {

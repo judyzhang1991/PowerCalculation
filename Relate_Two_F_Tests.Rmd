@@ -134,14 +134,15 @@ meanTest_power50to80_sampleSizes
 *Validation* 
 Calculate sample size using the formula:
 
-$n\approx\frac{4(t_{\text{crit}}+t_{1-\beta})}{\delta^2_a}$,
+$n = \frac{(t_{\text{crit}} + t_{1-\beta})^2}{\delta_{a}^{2}}\frac{1}{P(1-P)}$,
 
-where $\delta_a = \frac{\mu_a}{\sigma} = \frac{\mu_1 - \mu_0}{\sigma}$ is the effect size (measured by the standardized mean difference),
-
+where $n = n_{0} + n_{1}$ is the total sample size;
+$P = \frac{n_{1}}{n}$ is the proportion of treatment units in the sample; 
+$\delta_a = \frac{\mu_a}{\sigma} = \frac{\mu_1 - \mu_0}{\sigma}$ is the effect size (measured by the standardized mean difference),
 where $\sigma^2$ is the shared population variance of the treatment group and the control group. 
 
 
-Note: as $t_{\text{crit}}$ and $t_{1-\beta}$ are both functions of sample size $n$ (via d.f.), we will use z-scores (quantiles for standardized normal distribution $N(0,1)$) to approximate them as for large sample sizes (i.e. large d.f.s), t distribution is very close to the standard normal distribution. That is, we will use $z_{\text{crit}}$ and $z_{1-\beta}$ instead. 
+Note: as $t_{\text{crit}}$ and $t_{1-\beta}$ are both functions of sample size $n$ (via d.f.), *for large sample sizes* we will use z-scores (quantiles for standardized normal distribution $N(0,1)$) to approximate them as for large sample sizes (i.e. large d.f.s), t distribution is very close to the standard normal distribution. That is, we will use $z_{\text{crit}}$ and $z_{1-\beta}$ instead. 
 
 ```{r sampleSize_mean_validation}
 
@@ -164,12 +165,18 @@ for(i in 1:length(powers)){
 
 
 ns <- tibble()
+ns_new <- tibble()
+
+# For equal sample sizes, P = 0.5.
+P <- 0.5
 
 for(i in 1:length(z_ps)){
   
   for(j in 1:length(deltas)){
     
     ns[i, j] <- round(4*(z_crit + z_ps[i])/(deltas[j])^2)
+    
+    ns_new[i,j] <- round(((z_crit + z_ps[i])^2)/(deltas[j]^2)*(1/(P*(1-P))))
     
   }
   
@@ -194,6 +201,32 @@ meanTest_power50to80_sampleSizes_valid <- ns %>% pivot_longer(c("...1", "...2", 
 
 
 meanTest_power50to80_sampleSizes_valid
+
+
+
+
+meanTest_power50to80_sampleSizes_valid_new <- ns_new %>% pivot_longer(c("...1", "...2", "...3", "...4", "...5"), names_to = "Delta", values_to = "Total_Sample_Size") %>%
+  mutate(
+    Effect_Size = case_when(
+      Delta == "...1" ~ 0.1,
+      Delta == "...2" ~ 0.2,
+      Delta == "...3" ~ 0.3, 
+      Delta == "...4" ~ 0.4,
+      Delta == "...5" ~ 0.5
+    ),
+    
+    Power = c(rep(0.5, 5), rep(0.6, 5), rep(0.7, 5), rep(0.8, 5)),
+    
+    Sample_Size_per_Group = round(Total_Sample_Size / 2)
+  ) %>%
+  
+  select (Power, Effect_Size, Total_Sample_Size, Sample_Size_per_Group)
+
+
+
+
+meanTest_power50to80_sampleSizes_valid_new
+
 
 
 ```
