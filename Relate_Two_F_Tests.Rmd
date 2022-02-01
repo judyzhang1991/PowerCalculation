@@ -711,16 +711,24 @@ result_table_unique <- result_table %>%
 ggplot(data = result_table_unique, mapping = aes(x = n, y = power, group = phi, color = phi)) + 
   geom_point() +
   geom_line(size = 0.5) +
-  geom_hline(yintercept = 0.8, size = 1, linetype = "dashed") +
+  geom_hline(yintercept = 0.8, size = 1, linetype = "dashed", color = "#1B4F72") +
+   geom_hline(yintercept = 0.7, size = 1, linetype = "dashed", color = "#1B4F72") +
+   geom_hline(yintercept = 0.6, size = 1, linetype = "dashed", color = "#1B4F72") +
+   geom_hline(yintercept = 0.5, size = 1, linetype = "dashed", color = "#1B4F72") +
   scale_x_continuous(name = "Sample Size (per group)", breaks = c(seq(0, 1600, 100), 64, 99, 175, 393, 1571)) +
-  scale_y_continuous(name = "Power", breaks = sort(c(seq(0, 1, 0.15), 0.8))) +
+  scale_y_continuous(name = "Power", breaks = sort(c(0.8, 0.7, 0.6, 0.5))) +
   scale_color_manual(name = "Population Variances Ratio", values=c("#B7950B", "#0BB795", "#B387C2", "#FFC300", "#F03A5E")) +
+  ggtiltle("Sample Size Needed for Different Power Levels by Levels of Population Variance Ratio") + 
   theme(axis.text.x = element_text(angle = 75, vjust = 0.5, hjust=1,
                                    color = c(rep('black', 17), rep('red', 5))),
         axis.ticks.length.x = unit(0.25, "cm"))
 
 ```
 
+
+**Note**
+
+1. For $\phi = 1.1$ or $\phi = 1/1.1$, even with large sample sizes (which enables finding small SMD), it is hard to detect difference in variances. 
 
 
 **Observations**

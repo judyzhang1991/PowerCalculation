@@ -1,0 +1,118 @@
+---
+title: "Power v.s. Effect Size"
+author: "Jingyang(Judy) Zhang"
+date: "02/01/2022"
+output: html_document
+---
+
+
+
+# Load Packages
+```{r}
+library(tidyverse)
+
+library(pwr)
+
+source("F_Test_Power_Mean_Functions.R")
+
+source("F_Test_Power_Variance_Functions.R")
+```
+
+
+# Introduction
+
+Mean Test: two sample t test for equality of population means. 
+
+Variance Test: F test for equality of population variances. 
+
+## Power v.s. Effect Size
+
+### Mean Test
+
+1. Assume equal population variances of the treatment and the control group:
+
+$\sigma_0^2 = \sigma_1^2 = \sigma^2$
+
+2. Assume equal samples sizes of the treatment and the control group:
+
+$n_0 = n_1 = n$
+
+```{r}
+
+deltas <- seq(0, 2, by = 0.1)
+
+n_trt <- 30
+
+n_ctrl <- 30
+
+alpha <- 0.05
+
+pwr_list <- lapply(deltas, function(d){
+  pwr.t2n.test(n1 = n_trt, n2 = n_ctrl, 
+               d = d,
+               power = NULL,
+               sig.level = alpha, 
+               alternative = "two.sided")
+})
+
+
+mean_powers <- sapply(pwr_list, '[[', 'power')
+
+mean_powers_df <- tibble(power = mean_powers, effect_size_delta = deltas)
+
+ggplot(mean_powers_df, aes(x = effect_size_delta, y = power)) +
+  geom_point(size = 1, colour = "#92a3ac") +
+  geom_line(size = 0.5, colour = "#c7a68d") +
+  scale_x_continuous(limits = c(0, 2), breaks = seq(0, 2, by = 0.5)) + 
+  scale_y_continuous(labels = scales::percent) +
+  xlab("Effec Size (SMD)") +
+  ylab(expression("test power =" ~ 1 - beta)) + 
+  labs(title = "Power v.s. Effect Size (SMD)", 
+       subtitle = "n = 30 per group, significant = 0.05") +
+  theme_minimal()
+
+
+```
+
+
+### Variance Test
+
+1. Assume equal samples sizes of the treatment and the control group:
+
+$n_0 = n_1 = n$
+
+```{r}
+
+sigma_sqr1s <- c(1.1, 1/1.1, 1.2, 1/1.2, 1.3, 1/1.3, 1.4, 1/1.4, 1.5, 1/1.5)
+
+
+sigma_sqr0s <- rep(1, length(sigma_sqr1s))
+
+ns_trt <- rep(30, length(sigma_sqr1s))
+
+ns_ctrl <- rep(30, length(sigma_sqr1s))
+
+alphas <- rep(0.05, length(sigma_sqr1s))
+
+
+
+
+var_powers_df <- simulate_power_var(sigma_sqr1s, sigma_sqr0s, ns_trt, ns_ctrl, alphas)
+
+
+
+
+ggplot(var_powers_df_small, aes(x = phi, y = power)) +
+  geom_point(size = 1, colour = "#92a3ac") +
+  geom_line(size = 0.5, colour = "#c7a68d") +
+  scale_x_continuous(limits = c(0, 2), breaks = seq(0, 2, by = 0.5)) + 
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  xlab("Effec Size (Phi)") +
+  ylab(expression("test power =" ~ 1 - beta)) + 
+  labs(title = "Power v.s. Effect Size (Phi)", 
+       subtitle = "n = 30 per group, significant = 0.05") +
+  theme_minimal()
+
+
+```
+
